@@ -4,9 +4,15 @@ interface IntroScreenProps {
   onStart: () => void;
   onOpenHistory: () => void;
   historyCount: number;
+  onAttractionChange: (active: boolean) => void;
 }
 
-export function IntroScreen({ onStart, onOpenHistory, historyCount }: IntroScreenProps) {
+export function IntroScreen({
+  onStart,
+  onOpenHistory,
+  historyCount,
+  onAttractionChange,
+}: IntroScreenProps) {
   return (
     <main className={styles.screen}>
       <div className={styles.index} aria-hidden="true">
@@ -23,7 +29,15 @@ export function IntroScreen({ onStart, onOpenHistory, historyCount }: IntroScree
           <br />
           变成一片只属于你的星云。
         </p>
-        <button className="primary-action" type="button" onClick={onStart}>
+        <button
+          className="primary-action"
+          type="button"
+          onClick={onStart}
+          onPointerEnter={() => onAttractionChange(true)}
+          onPointerLeave={() => onAttractionChange(false)}
+          onFocus={() => onAttractionChange(true)}
+          onBlur={() => onAttractionChange(false)}
+        >
           <span>开始生成</span>
           <span aria-hidden="true">↗</span>
         </button>

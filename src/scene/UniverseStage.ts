@@ -9,6 +9,7 @@ import type {
 import { CameraRig } from './CameraRig';
 import { FarStarField } from './FarStarField';
 import { ForegroundMotes } from './ForegroundMotes';
+import { InputEchoField } from './InputEchoField';
 import { MidDustField } from './MidDustField';
 import { PointerGravity } from './PointerGravity';
 import { PostProcessing } from './PostProcessing';
@@ -21,6 +22,8 @@ export interface UniverseStageState {
   quiet: boolean;
   transitionProgress: number;
   inputActivity: number;
+  inputLength: number;
+  introAttraction: boolean;
 }
 
 export class UniverseStage {
@@ -31,6 +34,7 @@ export class UniverseStage {
   private readonly farStars: FarStarField;
   private readonly midDust: MidDustField;
   private readonly foreground: ForegroundMotes;
+  private readonly inputEcho: InputEchoField;
   private readonly nebula: ProceduralNebula;
   private readonly pointerGravity: PointerGravity;
   private readonly postProcessing: PostProcessing;
@@ -76,8 +80,15 @@ export class UniverseStage {
     this.farStars = new FarStarField(quality);
     this.midDust = new MidDustField(quality, this.pixelRatio);
     this.foreground = new ForegroundMotes(quality);
+    this.inputEcho = new InputEchoField();
     this.nebula = new ProceduralNebula(initialState.parameters, quality, this.pixelRatio);
-    this.scene.add(this.farStars.points, this.midDust.points, this.nebula.group, this.foreground.points);
+    this.scene.add(
+      this.farStars.points,
+      this.midDust.points,
+      this.nebula.group,
+      this.inputEcho.points,
+      this.foreground.points,
+    );
     this.pointerGravity = new PointerGravity({
       onPulse: () => this.nebula.pulseOnce(),
       onZoom: (delta) => this.cameraRig.zoom(delta),
@@ -101,6 +112,7 @@ export class UniverseStage {
     this.nebula.setParameters(next.parameters);
     this.nebula.setBlueprint(next.blueprint, this.pixelRatio);
     this.midDust.setParameters(next.parameters);
+    this.inputEcho.setSignal(next.inputLength, next.inputActivity, next.stage === 'sentence');
     this.postProcessing.setEnergy(next.parameters.energy, next.quiet);
   }
 
@@ -122,6 +134,7 @@ export class UniverseStage {
     this.farStars.dispose();
     this.midDust.dispose();
     this.foreground.dispose();
+    this.inputEcho.dispose();
     this.nebula.dispose();
     this.postProcessing.dispose();
     this.scene.clear();
@@ -183,17 +196,19 @@ export class UniverseStage {
     this.elapsed += delta;
     this.pointerGravity.update(delta);
     const activityBoost = Math.min(1, this.state.inputActivity / 8);
-    const interaction = Math.min(1, this.pointerGravity.interaction + activityBoost * 0.32);
+    const introBoost = this.state.introAttraction && this.state.stage === 'intro' ? 0.42 : 0;
+    const interaction = Math.min(
+      1,
+      this.pointerGravity.interaction + activityBoost * 0.32 + introBoost,
+    );
+    const fieldPointer =
+      introBoost > 0 ? new THREE.Vector2(-0.34, -0.36) : this.pointerGravity.pointer;
 
     this.cameraRig.update(this.elapsed, delta, this.pointerGravity.pointer);
     this.farStars.update(this.elapsed, this.state.quiet);
-    this.midDust.update(
-      this.elapsed,
-      this.pointerGravity.pointer,
-      interaction,
-      this.state.quiet,
-    );
+    this.midDust.update(this.elapsed, fieldPointer, interaction, this.state.quiet);
     this.foreground.update(this.elapsed, this.pointerGravity.pointer, this.state.quiet);
+    this.inputEcho.update(this.elapsed, delta);
     this.nebula.update(
       this.elapsed,
       delta,

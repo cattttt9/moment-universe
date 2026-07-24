@@ -21,6 +21,8 @@ interface UniverseStageProps {
   reducedMotion: boolean;
   transitionProgress: number;
   inputActivity: number;
+  inputLength: number;
+  introAttraction: boolean;
   onReveal: () => void;
 }
 
@@ -60,6 +62,8 @@ export const UniverseStage = forwardRef<UniverseStageHandle, UniverseStageProps>
           quiet: current.quiet,
           transitionProgress: current.transitionProgress,
           inputActivity: current.inputActivity,
+          inputLength: current.inputLength,
+          introAttraction: current.introAttraction,
         },
         current.quality,
         current.reducedMotion,
@@ -80,10 +84,14 @@ export const UniverseStage = forwardRef<UniverseStageHandle, UniverseStageProps>
         quiet: props.quiet,
         transitionProgress: props.transitionProgress,
         inputActivity: props.inputActivity,
+        inputLength: props.inputLength,
+        introAttraction: props.introAttraction,
       });
     }, [
       props.blueprint,
       props.inputActivity,
+      props.inputLength,
+      props.introAttraction,
       props.parameters,
       props.quiet,
       props.stage,

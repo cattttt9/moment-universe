@@ -6,10 +6,7 @@ import { IntroScreen } from './components/IntroScreen/IntroScreen';
 import { SentenceInput } from './components/SentenceInput/SentenceInput';
 import { UniverseControls } from './components/UniverseControls/UniverseControls';
 import { UniverseResult } from './components/UniverseResult/UniverseResult';
-import {
-  UniverseStage,
-  type UniverseStageHandle,
-} from './components/UniverseStage/UniverseStage';
+import { UniverseStage, type UniverseStageHandle } from './components/UniverseStage/UniverseStage';
 import { createUniverseConfig, generateUniverseBlueprint } from './engine/universeGenerator';
 import { useQualityLevel } from './hooks/useQualityLevel';
 import { useReducedMotion } from './hooks/useReducedMotion';
@@ -32,6 +29,7 @@ export function App() {
   const [transitionProgress, setTransitionProgress] = useState(0);
   const [inputActivity, setInputActivity] = useState(0);
   const [revealed, setRevealed] = useState(false);
+  const [introAttraction, setIntroAttraction] = useState(false);
   const universeStageRef = useRef<UniverseStageHandle>(null);
   const quality = useQualityLevel();
   const reducedMotion = useReducedMotion();
@@ -81,6 +79,8 @@ export function App() {
         reducedMotion={reducedMotion}
         transitionProgress={transitionProgress}
         inputActivity={inputActivity}
+        inputLength={sentence.length}
+        introAttraction={introAttraction}
         onReveal={() => setRevealed(true)}
       />
       {stage === 'intro' && (
@@ -88,6 +88,7 @@ export function App() {
           onStart={() => setStage('sentence')}
           onOpenHistory={() => setHistoryOpen(true)}
           historyCount={history.length}
+          onAttractionChange={setIntroAttraction}
         />
       )}
       {stage === 'sentence' && (
