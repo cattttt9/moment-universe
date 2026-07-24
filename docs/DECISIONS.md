@@ -136,3 +136,24 @@ Three.js 管理 WebGL 场景，以 `Points`、`BufferGeometry` 和轻量着色�
 ### 影响
 
 本项目不会创建 `.openai/hosting.json`，也不会自动发布到其他托管平台。
+
+## 决策：延迟加载 WebGL，不引入后处理链
+
+### 背景
+
+同步引入 Three.js 后，首个生产构建的单体 JavaScript 约 789 kB；Bloom 等后处理还会增加
+移动端显存、包体和资源释放复杂度。
+
+### 选择
+
+结果阶段通过 `React.lazy` 加载 `UniverseCanvas`，使用柔边点精灵和雾化 Sprite 代替 Bloom。
+
+### 原因
+
+- 欢迎、输入和参数阶段不需要下载 WebGL 模块
+- 保持单一 renderer 与明确的释放边界
+- 低性能设备也能保留核心视觉
+
+### 影响
+
+首次进入结果页会短暂显示“正在点亮星核”，最终构建拆为约 295 kB 主包与 494 kB WebGL 包。

@@ -61,6 +61,9 @@ npm run package:zip
 压缩包生成在 `artifacts/moment-universe-v0.1.0.zip`。解压后部署到任何静态 HTTP
 服务器。由于浏览器 ES Module 安全限制，不保证直接双击 `index.html` 可用。
 
+脚本使用 MIT 许可的 Archiver 8，并直接调用其具名 `ZipArchive` API；`artifacts/`
+已加入 `.gitignore`，不会误提交二进制发布包。
+
 ## 部署失败排查
 
 - **页面空白**：确认 GitHub Pages 使用 Actions，且 Vite `base` 与仓库子路径一致。
