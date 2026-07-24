@@ -1,11 +1,13 @@
 import { useEffect, useRef } from 'react';
 import { sampleTextParticles, type TextSampleParticle } from '../../engine/textParticleSampler';
+import type { UniverseVisualProfile } from '../../types/universe';
 import styles from './TextParticleTransition.module.css';
 
 interface TextParticleTransitionProps {
   text: string;
   progress: number;
   reducedMotion: boolean;
+  profile: UniverseVisualProfile;
 }
 
 function easeInOut(value: number) {
@@ -40,6 +42,7 @@ export function TextParticleTransition({
   text,
   progress,
   reducedMotion,
+  profile,
 }: TextParticleTransitionProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<TextSampleParticle[]>([]);
@@ -58,12 +61,12 @@ export function TextParticleTransition({
       canvas.style.width = `${width}px`;
       canvas.style.height = `${height}px`;
       dimensionsRef.current = { width, height };
-      particlesRef.current = sampleTextParticles(text, width, height, width <= 680);
+      particlesRef.current = sampleTextParticles(text, width, height, width <= 680, profile);
     };
     resize();
     window.addEventListener('resize', resize);
     return () => window.removeEventListener('resize', resize);
-  }, [reducedMotion, text]);
+  }, [profile, reducedMotion, text]);
 
   useEffect(() => {
     const canvas = canvasRef.current;

@@ -1,18 +1,25 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
+import type { UniverseVisualProfile } from '../../types/universe';
 import { TextParticleTransition } from './TextParticleTransition';
 import styles from './GenerationTransition.module.css';
 
 interface GenerationTransitionProps {
   text: string;
+  profile: UniverseVisualProfile;
   onProgress?: (progress: number) => void;
   onComplete: () => void;
 }
 
 const statuses = ['正在采样文字微光', '校准引力与轨道', '等待星核出现', '宇宙已形成'];
 
-export function GenerationTransition({ text, onProgress, onComplete }: GenerationTransitionProps) {
+export function GenerationTransition({
+  text,
+  profile,
+  onProgress,
+  onComplete,
+}: GenerationTransitionProps) {
   const reducedMotion = useReducedMotion();
   const [progress, setProgress] = useState(0);
   const completedRef = useRef(false);
@@ -47,7 +54,12 @@ export function GenerationTransition({ text, onProgress, onComplete }: Generatio
       <button className={styles.skip} type="button" onClick={complete}>
         跳过生成动画
       </button>
-      <TextParticleTransition text={text} progress={progress} reducedMotion={reducedMotion} />
+      <TextParticleTransition
+        text={text}
+        profile={profile}
+        progress={progress}
+        reducedMotion={reducedMotion}
+      />
       <div className={styles.collapse} style={{ '--progress': progress } as React.CSSProperties}>
         {reducedMotion && <p className={styles.sentence}>{text}</p>}
         <div className={styles.core} aria-hidden="true" />

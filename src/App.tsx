@@ -112,6 +112,7 @@ export function App() {
       {stage === 'generating' && config && (
         <GenerationTransition
           text={config.text}
+          profile={blueprint!.profile}
           onProgress={setTransitionProgress}
           onComplete={completeGeneration}
         />
