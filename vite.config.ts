@@ -6,7 +6,7 @@ const pagesBase = repositoryName ? `/${repositoryName}/` : '/';
 
 export default defineConfig({
   plugins: [react()],
-  base: process.env.VITE_BASE_PATH ?? pagesBase,
+  base: process.env.VITE_BASE_PATH || pagesBase,
   build: {
     target: 'es2020',
     sourcemap: true,
