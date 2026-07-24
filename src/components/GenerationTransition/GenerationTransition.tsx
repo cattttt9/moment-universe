@@ -1,5 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import gsap from 'gsap';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
+import { TextParticleTransition } from './TextParticleTransition';
 import styles from './GenerationTransition.module.css';
 
 interface GenerationTransitionProps {
@@ -12,33 +14,38 @@ const statuses = ['正在采样文字微光', '校准引力与轨道', '等待�
 export function GenerationTransition({ text, onComplete }: GenerationTransitionProps) {
   const reducedMotion = useReducedMotion();
   const [progress, setProgress] = useState(0);
+  const completedRef = useRef(false);
+
+  const complete = useCallback(() => {
+    if (completedRef.current) return;
+    completedRef.current = true;
+    onComplete();
+  }, [onComplete]);
 
   useEffect(() => {
-    const duration = reducedMotion ? 650 : 3800;
-    const start = performance.now();
-    let frame = 0;
-    const update = (now: number) => {
-      const next = Math.min(1, (now - start) / duration);
-      setProgress(next);
-      if (next >= 1) {
-        window.setTimeout(onComplete, reducedMotion ? 20 : 260);
-      } else {
-        frame = window.requestAnimationFrame(update);
-      }
+    const state = { progress: 0 };
+    const tween = gsap.to(state, {
+      progress: 1,
+      duration: reducedMotion ? 0.55 : 4.2,
+      ease: reducedMotion ? 'none' : 'power2.inOut',
+      onUpdate: () => setProgress(state.progress),
+      onComplete: () => window.setTimeout(complete, reducedMotion ? 20 : 180),
+    });
+    return () => {
+      tween.kill();
     };
-    frame = window.requestAnimationFrame(update);
-    return () => window.cancelAnimationFrame(frame);
-  }, [onComplete, reducedMotion]);
+  }, [complete, reducedMotion]);
 
   const statusIndex = Math.min(statuses.length - 1, Math.floor(progress * statuses.length));
 
   return (
     <main className={styles.screen} aria-live="polite">
-      <button className={styles.skip} type="button" onClick={onComplete}>
+      <button className={styles.skip} type="button" onClick={complete}>
         跳过生成动画
       </button>
+      <TextParticleTransition text={text} progress={progress} reducedMotion={reducedMotion} />
       <div className={styles.collapse} style={{ '--progress': progress } as React.CSSProperties}>
-        <p className={styles.sentence}>{text}</p>
+        {reducedMotion && <p className={styles.sentence}>{text}</p>}
         <div className={styles.core} aria-hidden="true" />
       </div>
       <div className={styles.status}>
