@@ -26,6 +26,7 @@ export function OrbitDial({
   const descriptionId = useId();
   const dialRef = useRef<HTMLDivElement>(null);
   const frameRef = useRef<number | null>(null);
+  const draggingRef = useRef(false);
   const pendingRef = useRef(value);
   const valueRef = useRef(value);
   const [dragging, setDragging] = useState(false);
@@ -45,6 +46,7 @@ export function OrbitDial({
 
   const finishDrag = (element: HTMLDivElement, pointerId: number) => {
     if (element.hasPointerCapture(pointerId)) element.releasePointerCapture(pointerId);
+    draggingRef.current = false;
     setDragging(false);
     onChangeEnd?.(pendingRef.current);
   };
@@ -75,11 +77,15 @@ export function OrbitDial({
           event.preventDefault();
           event.currentTarget.setPointerCapture(event.pointerId);
           pendingRef.current = value;
+          draggingRef.current = true;
           setDragging(true);
           updateFromPointer(event.clientX, event.clientY);
         }}
         onPointerMove={(event) => {
-          if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+          if (
+            draggingRef.current ||
+            event.currentTarget.hasPointerCapture(event.pointerId)
+          ) {
             updateFromPointer(event.clientX, event.clientY);
           }
         }}
