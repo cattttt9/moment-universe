@@ -89,6 +89,7 @@ export function App() {
       {stage === 'universe' && blueprint && (
         <UniverseResult
           blueprint={blueprint}
+          quality={quality}
           quiet={quiet}
           onQuietToggle={() => setQuiet((current) => !current)}
           onSave={archiveCurrent}

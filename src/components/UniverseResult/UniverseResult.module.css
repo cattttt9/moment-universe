@@ -5,76 +5,6 @@
   background: #050403;
 }
 
-.placeholder {
-  position: absolute;
-  inset: 0;
-  transition: filter 1s ease;
-  background:
-    radial-gradient(
-      ellipse at 62% 48%,
-      color-mix(in srgb, var(--outer) 16%, transparent),
-      transparent 28%
-    ),
-    radial-gradient(
-      ellipse at 58% 54%,
-      color-mix(in srgb, var(--inner) 18%, transparent),
-      transparent 17%
-    ),
-    #050403;
-}
-
-.placeholder::before,
-.placeholder::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 62%;
-  border: 1px solid color-mix(in srgb, var(--inner) 20%, transparent);
-  border-radius: 50%;
-  transform: translate(-50%, -50%) rotate(-18deg);
-}
-
-.placeholder::before {
-  width: min(64vw, 58rem);
-  height: min(24vw, 18rem);
-}
-
-.placeholder::after {
-  width: min(42vw, 36rem);
-  height: min(18vw, 12rem);
-}
-
-.placeholder span {
-  position: absolute;
-  top: 50%;
-  left: 62%;
-  width: 1.4rem;
-  height: 1.4rem;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  background: var(--core);
-  box-shadow:
-    0 0 1rem var(--core),
-    0 0 6rem var(--inner);
-}
-
-.placeholder i {
-  position: absolute;
-  inset: 0;
-  opacity: 0.7;
-  background-image:
-    radial-gradient(circle at 60% 40%, var(--inner) 0 1px, transparent 1.5px),
-    radial-gradient(circle at 70% 62%, var(--outer) 0 1px, transparent 1.5px);
-  background-size:
-    17px 13px,
-    29px 23px;
-  mask-image: radial-gradient(ellipse at 62% 50%, black, transparent 45%);
-}
-
-.placeholderQuiet {
-  filter: brightness(0.7) saturate(0.75);
-}
-
 .hint {
   position: absolute;
   z-index: 4;
@@ -84,26 +14,10 @@
   color: var(--color-faint);
   font: 0.58rem/1 var(--font-mono);
   letter-spacing: 0.1em;
+  pointer-events: none;
 }
 
 @media (max-width: 680px) {
-  .placeholder::before {
-    width: 110vw;
-    height: 42vw;
-  }
-
-  .placeholder::after {
-    width: 82vw;
-    height: 32vw;
-  }
-
-  .placeholder span,
-  .placeholder::before,
-  .placeholder::after {
-    left: 50%;
-    top: 38%;
-  }
-
   .hint {
     display: none;
   }

@@ -1,9 +1,12 @@
-import type { UniverseBlueprint } from '../../types/universe';
+import { useRef } from 'react';
+import type { QualityLevel, UniverseBlueprint } from '../../types/universe';
+import { UniverseCanvas, type UniverseCanvasHandle } from '../UniverseCanvas/UniverseCanvas';
 import { UniverseInfo } from '../UniverseInfo/UniverseInfo';
 import styles from './UniverseResult.module.css';
 
 interface UniverseResultProps {
   blueprint: UniverseBlueprint;
+  quality: QualityLevel;
   quiet: boolean;
   onQuietToggle: () => void;
   onSave: () => void;
@@ -13,28 +16,18 @@ interface UniverseResultProps {
 
 export function UniverseResult({
   blueprint,
+  quality,
   quiet,
   onQuietToggle,
   onSave,
   onEdit,
   onRestart,
 }: UniverseResultProps) {
+  const canvasRef = useRef<UniverseCanvasHandle>(null);
+
   return (
     <main className={styles.screen}>
-      <div
-        className={`${styles.placeholder} ${quiet ? styles.placeholderQuiet : ''}`}
-        style={
-          {
-            '--core': blueprint.palette.core,
-            '--inner': blueprint.palette.inner,
-            '--outer': blueprint.palette.outer,
-          } as React.CSSProperties
-        }
-        aria-label="星云交互画布将在下一开发阶段接入"
-      >
-        <span />
-        <i />
-      </div>
+      <UniverseCanvas ref={canvasRef} blueprint={blueprint} quality={quality} quiet={quiet} />
       <UniverseInfo
         config={blueprint.config}
         quiet={quiet}
