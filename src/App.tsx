@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { DEFAULT_PARAMETERS } from './constants/universe';
 import { GenerationTransition } from './components/GenerationTransition/GenerationTransition';
 import { HistoryDrawer } from './components/HistoryDrawer/HistoryDrawer';
@@ -6,8 +6,13 @@ import { IntroScreen } from './components/IntroScreen/IntroScreen';
 import { SentenceInput } from './components/SentenceInput/SentenceInput';
 import { UniverseControls } from './components/UniverseControls/UniverseControls';
 import { UniverseResult } from './components/UniverseResult/UniverseResult';
+import {
+  UniverseStage,
+  type UniverseStageHandle,
+} from './components/UniverseStage/UniverseStage';
 import { createUniverseConfig, generateUniverseBlueprint } from './engine/universeGenerator';
 import { useQualityLevel } from './hooks/useQualityLevel';
+import { useReducedMotion } from './hooks/useReducedMotion';
 import { clearHistory, loadHistory, saveUniverse } from './stores/historyStore';
 import type {
   AppStage,
@@ -24,7 +29,12 @@ export function App() {
   const [quiet, setQuiet] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [history, setHistory] = useState(loadHistory);
+  const [transitionProgress, setTransitionProgress] = useState(0);
+  const [inputActivity, setInputActivity] = useState(0);
+  const [revealed, setRevealed] = useState(false);
+  const universeStageRef = useRef<UniverseStageHandle>(null);
   const quality = useQualityLevel();
+  const reducedMotion = useReducedMotion();
 
   const blueprint = useMemo(
     () => (config ? generateUniverseBlueprint(config, quality) : null),
@@ -34,6 +44,8 @@ export function App() {
   const beginGeneration = () => {
     setConfig(createUniverseConfig(sentence, parameters));
     setQuiet(false);
+    setTransitionProgress(0);
+    setRevealed(false);
     setStage('generating');
   };
 
@@ -59,6 +71,18 @@ export function App() {
 
   return (
     <>
+      <UniverseStage
+        ref={universeStageRef}
+        stage={stage}
+        parameters={parameters}
+        blueprint={blueprint}
+        quality={quality}
+        quiet={quiet}
+        reducedMotion={reducedMotion}
+        transitionProgress={transitionProgress}
+        inputActivity={inputActivity}
+        onReveal={() => setRevealed(true)}
+      />
       {stage === 'intro' && (
         <IntroScreen
           onStart={() => setStage('sentence')}
@@ -70,6 +94,7 @@ export function App() {
         <SentenceInput
           value={sentence}
           onChange={setSentence}
+          onActivity={setInputActivity}
           onBack={() => setStage('intro')}
           onContinue={() => setStage('parameters')}
         />
@@ -84,7 +109,11 @@ export function App() {
         />
       )}
       {stage === 'generating' && config && (
-        <GenerationTransition text={config.text} onComplete={completeGeneration} />
+        <GenerationTransition
+          text={config.text}
+          onProgress={setTransitionProgress}
+          onComplete={completeGeneration}
+        />
       )}
       {stage === 'universe' && blueprint && (
         <UniverseResult
@@ -95,6 +124,9 @@ export function App() {
           onSave={archiveCurrent}
           onEdit={() => setStage('sentence')}
           onRestart={() => setStage('parameters')}
+          captureScene={() => universeStageRef.current?.capture() ?? null}
+          revealed={revealed}
+          onHideReveal={() => setRevealed(false)}
         />
       )}
       <HistoryDrawer

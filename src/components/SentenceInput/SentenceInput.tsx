@@ -1,28 +1,35 @@
 import { useRef, useState } from 'react';
 import { TEXT_LIMIT } from '../../constants/universe';
-import { AmbientDust } from '../AmbientDust/AmbientDust';
 import { StageFrame } from '../StageFrame/StageFrame';
 import styles from './SentenceInput.module.css';
 
 interface SentenceInputProps {
   value: string;
   onChange: (value: string) => void;
+  onActivity: (activity: number) => void;
   onBack: () => void;
   onContinue: () => void;
 }
 
-export function SentenceInput({ value, onChange, onBack, onContinue }: SentenceInputProps) {
+export function SentenceInput({
+  value,
+  onChange,
+  onActivity,
+  onBack,
+  onContinue,
+}: SentenceInputProps) {
   const [error, setError] = useState('');
   const lastInputAt = useRef(performance.now());
-  const [activity, setActivity] = useState(0);
 
   const change = (nextValue: string) => {
     const normalized = nextValue.replace(/\r\n/g, '\n').slice(0, TEXT_LIMIT);
     const now = performance.now();
     const elapsed = Math.max(now - lastInputAt.current, 40);
     lastInputAt.current = now;
-    setActivity(Math.min(10, 1400 / elapsed));
-    window.setTimeout(() => setActivity(0), 480);
+    onActivity(Math.min(10, 1400 / elapsed));
+    window.setTimeout(() => {
+      onActivity(0);
+    }, 480);
     onChange(normalized);
     if (normalized.trim()) setError('');
   };
@@ -37,7 +44,6 @@ export function SentenceInput({ value, onChange, onBack, onContinue }: SentenceI
 
   return (
     <>
-      <AmbientDust activity={activity} />
       <StageFrame stageNumber="01" kicker="LEAVE A SENTENCE" onBack={onBack}>
         <section className={styles.layout}>
           <div className={styles.prompt}>

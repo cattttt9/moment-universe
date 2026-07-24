@@ -1,4 +1,3 @@
-import { AmbientDust } from '../AmbientDust/AmbientDust';
 import styles from './IntroScreen.module.css';
 
 interface IntroScreenProps {
@@ -10,7 +9,6 @@ interface IntroScreenProps {
 export function IntroScreen({ onStart, onOpenHistory, historyCount }: IntroScreenProps) {
   return (
     <main className={styles.screen}>
-      <AmbientDust />
       <div className={styles.index} aria-hidden="true">
         NO. 00 — PRESENT
       </div>

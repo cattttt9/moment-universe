@@ -5,9 +5,12 @@
   padding: clamp(1.5rem, 4vw, 3.5rem);
   display: grid;
   place-items: center;
-  background:
-    linear-gradient(110deg, transparent 0 68%, rgb(130 84 49 / 3%) 68% 69%, transparent 69%),
-    var(--color-bg);
+  background: linear-gradient(
+    110deg,
+    rgb(5 4 3 / 24%) 0 68%,
+    rgb(130 84 49 / 4%) 68% 69%,
+    rgb(5 4 3 / 12%) 69%
+  );
 }
 
 .screen::after {

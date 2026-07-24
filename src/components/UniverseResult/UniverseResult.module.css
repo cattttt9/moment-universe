@@ -2,7 +2,34 @@
   position: relative;
   min-height: 100svh;
   overflow: hidden;
-  background: #050403;
+  background: linear-gradient(90deg, rgb(5 4 3 / 82%) 0 22%, rgb(5 4 3 / 34%) 46%, transparent 72%);
+}
+
+.quality {
+  position: absolute;
+  z-index: 2;
+  top: 4rem;
+  right: 1.6rem;
+  color: rgb(220 205 184 / 18%);
+  font: 0.55rem/1 var(--font-mono);
+  letter-spacing: 0.18em;
+}
+
+.reveal {
+  position: absolute;
+  z-index: 6;
+  top: 50%;
+  left: 50%;
+  max-width: min(80vw, 46rem);
+  transform: translate(-50%, -50%);
+  border: 0;
+  padding: 2rem;
+  color: var(--color-text);
+  background: rgb(5 4 3 / 56%);
+  backdrop-filter: blur(18px);
+  cursor: pointer;
+  font-size: clamp(1.1rem, 2.5vw, 2rem);
+  line-height: 1.8;
 }
 
 .loading {

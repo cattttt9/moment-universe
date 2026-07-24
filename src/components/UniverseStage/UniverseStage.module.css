@@ -1,0 +1,34 @@
+.stage {
+  position: fixed;
+  z-index: 0;
+  inset: 0;
+  overflow: hidden;
+  background: #050403;
+  pointer-events: none;
+}
+
+.stage canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.stage::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 70% 44%, transparent 0 38%, rgb(3 3 2 / 18%) 72%),
+    linear-gradient(90deg, rgb(5 4 3 / 32%), transparent 46%);
+  box-shadow: inset 0 0 12vw rgb(0 0 0 / 38%);
+}
+
+.fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--color-faint);
+  font: 0.65rem/1.6 var(--font-mono);
+}

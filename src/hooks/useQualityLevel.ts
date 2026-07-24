@@ -4,11 +4,13 @@ import { useReducedMotion } from './useReducedMotion';
 
 export function detectQualityLevel(reducedMotion = false): QualityLevel {
   if (typeof window === 'undefined') return 'medium';
+  if (reducedMotion) return 'low';
+  if (typeof window.matchMedia !== 'function') return 'medium';
   const narrow = window.matchMedia('(max-width: 720px)').matches;
   const coarse = window.matchMedia('(pointer: coarse)').matches;
   const memory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory;
 
-  if (reducedMotion || (memory !== undefined && memory <= 4) || (narrow && coarse)) return 'low';
+  if ((memory !== undefined && memory <= 4) || (narrow && coarse)) return 'low';
   if (coarse || window.devicePixelRatio > 2) return 'medium';
   return 'high';
 }

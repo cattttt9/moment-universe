@@ -6,12 +6,13 @@ import styles from './GenerationTransition.module.css';
 
 interface GenerationTransitionProps {
   text: string;
+  onProgress?: (progress: number) => void;
   onComplete: () => void;
 }
 
 const statuses = ['正在采样文字微光', '校准引力与轨道', '等待星核出现', '宇宙已形成'];
 
-export function GenerationTransition({ text, onComplete }: GenerationTransitionProps) {
+export function GenerationTransition({ text, onProgress, onComplete }: GenerationTransitionProps) {
   const reducedMotion = useReducedMotion();
   const [progress, setProgress] = useState(0);
   const completedRef = useRef(false);
@@ -28,13 +29,16 @@ export function GenerationTransition({ text, onComplete }: GenerationTransitionP
       progress: 1,
       duration: reducedMotion ? 0.55 : 4.2,
       ease: reducedMotion ? 'none' : 'power2.inOut',
-      onUpdate: () => setProgress(state.progress),
+      onUpdate: () => {
+        setProgress(state.progress);
+        onProgress?.(state.progress);
+      },
       onComplete: () => window.setTimeout(complete, reducedMotion ? 20 : 180),
     });
     return () => {
       tween.kill();
     };
-  }, [complete, reducedMotion]);
+  }, [complete, onProgress, reducedMotion]);
 
   const statusIndex = Math.min(statuses.length - 1, Math.floor(progress * statuses.length));
 

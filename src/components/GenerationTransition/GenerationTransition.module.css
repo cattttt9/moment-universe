@@ -4,7 +4,7 @@
   overflow: hidden;
   display: grid;
   place-items: center;
-  background: #060504;
+  background: rgb(6 5 4 / 38%);
 }
 
 .skip {
