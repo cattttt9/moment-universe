@@ -35,12 +35,7 @@ export type UniverseArchetype =
   | 'void-system';
 
 export type CameraPreset =
-  | 'left-offset'
-  | 'right-offset'
-  | 'diagonal'
-  | 'close'
-  | 'distant'
-  | 'dual-center';
+  'left-offset' | 'right-offset' | 'diagonal' | 'close' | 'distant' | 'dual-center';
 
 export interface UniverseVisualProfile {
   archetype: UniverseArchetype;

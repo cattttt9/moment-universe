@@ -82,10 +82,7 @@ export function OrbitDial({
           updateFromPointer(event.clientX, event.clientY);
         }}
         onPointerMove={(event) => {
-          if (
-            draggingRef.current ||
-            event.currentTarget.hasPointerCapture(event.pointerId)
-          ) {
+          if (draggingRef.current || event.currentTarget.hasPointerCapture(event.pointerId)) {
             updateFromPointer(event.clientX, event.clientY);
           }
         }}

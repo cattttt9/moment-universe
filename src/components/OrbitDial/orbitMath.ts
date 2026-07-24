@@ -7,7 +7,7 @@ export function clampOrbitValue(value: number) {
 }
 
 export function normalizeAngle(angle: number) {
-  let normalized = ((angle + 180) % 360 + 360) % 360 - 180;
+  let normalized = ((((angle + 180) % 360) + 360) % 360) - 180;
   if (normalized === -180) normalized = 180;
   return normalized;
 }
@@ -21,9 +21,7 @@ export function angleToValue(angle: number, previousValue = 50) {
   if (normalized < ORBIT_START_ANGLE || normalized > -ORBIT_START_ANGLE) {
     return clampOrbitValue(previousValue) >= 50 ? 100 : 0;
   }
-  return clampOrbitValue(
-    ((normalized - ORBIT_START_ANGLE) / ORBIT_SWEEP_ANGLE) * 100,
-  );
+  return clampOrbitValue(((normalized - ORBIT_START_ANGLE) / ORBIT_SWEEP_ANGLE) * 100);
 }
 
 export function pointerAngle(

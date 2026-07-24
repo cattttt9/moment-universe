@@ -19,7 +19,9 @@
 }
 
 .dial:focus-visible {
-  box-shadow: 0 0 0 1px rgb(232 205 168 / 65%), 0 0 2.4rem rgb(205 145 84 / 12%);
+  box-shadow:
+    0 0 0 1px rgb(232 205 168 / 65%),
+    0 0 2.4rem rgb(205 145 84 / 12%);
 }
 
 .dial.dragging {
@@ -36,7 +38,9 @@
 
 .orbit {
   border: 1px solid rgb(216 184 145 / 18%);
-  box-shadow: inset 0 0 2rem rgb(215 155 94 / 4%), 0 0 3rem rgb(215 155 94 / 3%);
+  box-shadow:
+    inset 0 0 2rem rgb(215 155 94 / 4%),
+    0 0 3rem rgb(215 155 94 / 3%);
 }
 
 .progress {
@@ -85,14 +89,21 @@
   width: 0.78rem;
   height: 0.78rem;
   background: #dfbd8e;
-  box-shadow: 0 0 0 4px rgb(223 189 142 / 8%), 0 0 1.4rem rgb(223 189 142 / 65%);
-  transition: width 160ms ease, height 160ms ease, box-shadow 160ms ease;
+  box-shadow:
+    0 0 0 4px rgb(223 189 142 / 8%),
+    0 0 1.4rem rgb(223 189 142 / 65%);
+  transition:
+    width 160ms ease,
+    height 160ms ease,
+    box-shadow 160ms ease;
 }
 
 .dragging .planet {
   width: 1rem;
   height: 1rem;
-  box-shadow: 0 0 0 7px rgb(223 189 142 / 10%), 0 0 2rem rgb(223 189 142 / 90%);
+  box-shadow:
+    0 0 0 7px rgb(223 189 142 / 10%),
+    0 0 2rem rgb(223 189 142 / 90%);
 }
 
 .dragging .trail {
