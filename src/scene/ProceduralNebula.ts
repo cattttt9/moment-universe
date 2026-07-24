@@ -1,6 +1,10 @@
 import * as THREE from 'three';
 import { createUniverseConfig, generateUniverseBlueprint } from '../engine/universeGenerator';
-import { createHazeTexture, createParticleSystem, type ParticleSystem } from '../engine/particleSystem';
+import {
+  createHazeTexture,
+  createParticleSystem,
+  type ParticleSystem,
+} from '../engine/particleSystem';
 import type {
   AppStage,
   QualityLevel,
@@ -10,12 +14,57 @@ import type {
 
 interface NebulaResources {
   particleSystem: ParticleSystem;
+  coreMaterials: THREE.ShaderMaterial[];
   geometries: THREE.BufferGeometry[];
   materials: THREE.Material[];
   textures: THREE.Texture[];
 }
 
 const PREVIEW_DATE = '2026-01-01T00:00:00.000Z';
+
+function createCoreMaterial(coreColor: string, innerColor: string, phase: number) {
+  return new THREE.ShaderMaterial({
+    transparent: true,
+    uniforms: {
+      uTime: { value: 0 },
+      uPulse: { value: 0 },
+      uPhase: { value: phase },
+      uCore: { value: new THREE.Color(coreColor) },
+      uInner: { value: new THREE.Color(innerColor) },
+    },
+    vertexShader: `
+      varying vec3 vNormal;
+      varying vec3 vView;
+      varying vec3 vPosition;
+      void main() {
+        vec4 viewPosition = modelViewMatrix * vec4(position, 1.0);
+        vNormal = normalize(normalMatrix * normal);
+        vView = normalize(-viewPosition.xyz);
+        vPosition = position;
+        gl_Position = projectionMatrix * viewPosition;
+      }
+    `,
+    fragmentShader: `
+      uniform float uTime;
+      uniform float uPulse;
+      uniform float uPhase;
+      uniform vec3 uCore;
+      uniform vec3 uInner;
+      varying vec3 vNormal;
+      varying vec3 vView;
+      varying vec3 vPosition;
+      void main() {
+        float fresnel = pow(1.0 - max(dot(vNormal, vView), 0.0), 2.4);
+        float flow = sin(vPosition.y * 19.0 + uTime * 0.42 + uPhase);
+        flow += sin(vPosition.x * 27.0 - uTime * 0.31) * 0.55;
+        flow = smoothstep(-0.9, 1.2, flow);
+        vec3 color = mix(uInner * 0.72, uCore, flow * 0.72 + fresnel * 0.34);
+        color += uCore * fresnel * (0.35 + uPulse * 0.3);
+        gl_FragColor = vec4(color, 0.92);
+      }
+    `,
+  });
+}
 
 export class ProceduralNebula {
   readonly group = new THREE.Group();
@@ -69,19 +118,16 @@ export class ProceduralNebula {
     const geometries: THREE.BufferGeometry[] = [];
     const materials: THREE.Material[] = [];
     const textures: THREE.Texture[] = [];
+    const coreMaterials: THREE.ShaderMaterial[] = [];
     this.cores.length = 0;
 
     for (let index = 0; index < blueprint.profile.coreCount; index += 1) {
-      const geometry = new THREE.SphereGeometry(
-        0.12 + blueprint.config.energy / 850,
-        28,
-        18,
+      const geometry = new THREE.SphereGeometry(0.12 + blueprint.config.energy / 850, 28, 18);
+      const material = createCoreMaterial(
+        index % 2 === 0 ? blueprint.palette.core : blueprint.palette.inner,
+        blueprint.palette.inner,
+        index * 1.73,
       );
-      const material = new THREE.MeshBasicMaterial({
-        color: index % 2 === 0 ? blueprint.palette.core : blueprint.palette.inner,
-        transparent: true,
-        opacity: 0.94,
-      });
       const core = new THREE.Mesh(geometry, material);
       const separation = blueprint.profile.coreCount > 1 ? 1.45 : 0;
       core.position.x = (index - (blueprint.profile.coreCount - 1) / 2) * separation;
@@ -89,8 +135,11 @@ export class ProceduralNebula {
       resultGroup.add(core);
       geometries.push(geometry);
       materials.push(material);
+      coreMaterials.push(material);
 
-      const texture = createHazeTexture(index % 2 === 0 ? blueprint.palette.core : blueprint.palette.inner);
+      const texture = createHazeTexture(
+        index % 2 === 0 ? blueprint.palette.core : blueprint.palette.inner,
+      );
       const glowMaterial = new THREE.SpriteMaterial({
         map: texture,
         color: index % 2 === 0 ? blueprint.palette.core : blueprint.palette.inner,
@@ -101,7 +150,7 @@ export class ProceduralNebula {
       });
       const glow = new THREE.Sprite(glowMaterial);
       glow.position.copy(core.position);
-      glow.scale.setScalar(1.05 + blueprint.config.energy / 88);
+      glow.scale.setScalar(0.92 + blueprint.config.energy / 122);
       resultGroup.add(glow);
       textures.push(texture);
       materials.push(glowMaterial);
@@ -144,7 +193,8 @@ export class ProceduralNebula {
       opacity: 0.11,
     });
     materials.push(orbitMaterial);
-    const orbitCount = blueprint.profile.archetype === 'void-system' ? 1 : Math.min(3, blueprint.armCount);
+    const orbitCount =
+      blueprint.profile.archetype === 'void-system' ? 1 : Math.min(3, blueprint.armCount);
     for (let index = 0; index < orbitCount; index += 1) {
       const radius = 2 + index * 1.25;
       const orbitPoints = Array.from({ length: 100 }, (_, pointIndex) => {
@@ -157,14 +207,24 @@ export class ProceduralNebula {
       });
       const geometry = new THREE.BufferGeometry().setFromPoints(orbitPoints);
       const orbit = new THREE.LineLoop(geometry, orbitMaterial);
-      orbit.rotation.set(index * 0.15, blueprint.profile.orientation.y, blueprint.profile.orientation.z);
+      orbit.rotation.set(
+        index * 0.15,
+        blueprint.profile.orientation.y,
+        blueprint.profile.orientation.z,
+      );
       resultGroup.add(orbit);
       geometries.push(geometry);
     }
 
     const preset = blueprint.profile.cameraPreset;
     resultGroup.position.x =
-      preset === 'left-offset' ? -0.55 : preset === 'right-offset' ? 1.35 : preset === 'dual-center' ? 0.45 : 0.85;
+      preset === 'left-offset'
+        ? -0.55
+        : preset === 'right-offset'
+          ? 1.35
+          : preset === 'dual-center'
+            ? 0.45
+            : 0.85;
     resultGroup.position.y = preset === 'diagonal' ? 0.65 : 0;
     resultGroup.rotation.set(
       blueprint.profile.orientation.x,
@@ -174,7 +234,7 @@ export class ProceduralNebula {
     resultGroup.scale.setScalar(blueprint.profile.scale);
     resultGroup.visible = false;
     this.group.add(resultGroup);
-    this.result = { particleSystem, geometries, materials, textures };
+    this.result = { particleSystem, coreMaterials, geometries, materials, textures };
   }
 
   pulseOnce() {
@@ -207,8 +267,7 @@ export class ProceduralNebula {
           ? THREE.MathUtils.smoothstep(this.transitionProgress, 0.62, 1)
           : 1;
       generated.scale.setScalar(this.blueprint.profile.scale * Math.max(0.03, formation));
-      generated.rotation.y +=
-        delta * (0.006 + this.parameters.energy / 7500) * (quiet ? 0.18 : 1);
+      generated.rotation.y += delta * (0.006 + this.parameters.energy / 7500) * (quiet ? 0.18 : 1);
       const uniforms = this.result.particleSystem.material.uniforms;
       uniforms.uTime!.value += delta * (quiet ? 0.18 : 1);
       uniforms.uInteraction!.value = interaction * (quiet ? 0.25 : 1);
@@ -216,6 +275,10 @@ export class ProceduralNebula {
       uniforms.uPointer!.value.copy(pointer);
       uniforms.uPulse!.value = this.pulse;
       uniforms.uOpacity!.value = (quiet ? 0.46 : 0.92) * formation;
+      this.result.coreMaterials.forEach((material) => {
+        material.uniforms.uTime!.value = time;
+        material.uniforms.uPulse!.value = this.pulse;
+      });
     }
   }
 
