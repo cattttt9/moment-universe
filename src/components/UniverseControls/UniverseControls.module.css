@@ -1,0 +1,80 @@
+.section {
+  padding-block: 2rem;
+}
+
+.intro {
+  margin-bottom: clamp(2.5rem, 6vh, 5rem);
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 3rem;
+}
+
+.intro h2 {
+  margin: 0 0 0.8rem;
+  font-size: clamp(2rem, 4vw, 4rem);
+  font-weight: 300;
+  letter-spacing: 0.08em;
+}
+
+.intro p {
+  margin: 0;
+  color: var(--color-dim);
+  line-height: 1.8;
+}
+
+.intro blockquote {
+  max-width: 25rem;
+  margin: 0;
+  color: var(--color-faint);
+  font-size: 0.85rem;
+  line-height: 1.8;
+  text-align: right;
+}
+
+.controls {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(1rem, 5vw, 4rem);
+}
+
+.footer {
+  margin-top: clamp(2rem, 5vh, 4rem);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.footer p {
+  max-width: 32rem;
+  margin: 0;
+  color: var(--color-faint);
+  font: 0.62rem/1.8 var(--font-mono);
+}
+
+@media (max-width: 760px) {
+  .section {
+    padding-top: 3rem;
+  }
+
+  .intro {
+    align-items: start;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .intro blockquote {
+    text-align: left;
+  }
+
+  .controls {
+    grid-template-columns: 1fr;
+    gap: 3.5rem;
+  }
+
+  .footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

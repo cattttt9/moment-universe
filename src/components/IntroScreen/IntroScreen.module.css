@@ -1,0 +1,109 @@
+.screen {
+  position: relative;
+  min-height: 100svh;
+  overflow: hidden;
+  padding: clamp(1.5rem, 4vw, 3.5rem);
+  display: grid;
+  place-items: center;
+  background:
+    linear-gradient(110deg, transparent 0 68%, rgb(130 84 49 / 3%) 68% 69%, transparent 69%),
+    var(--color-bg);
+}
+
+.screen::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 56% 48%, rgb(189 125 69 / 10%), transparent 26rem);
+}
+
+.index {
+  position: absolute;
+  z-index: 2;
+  top: clamp(1.5rem, 4vw, 3.5rem);
+  left: clamp(1.5rem, 4vw, 3.5rem);
+  color: var(--color-faint);
+  font: 0.62rem/1 var(--font-mono);
+  letter-spacing: 0.25em;
+}
+
+.hero {
+  position: relative;
+  z-index: 2;
+  width: min(100%, 63rem);
+  padding-left: clamp(0rem, 8vw, 8rem);
+}
+
+.kicker {
+  margin: 0 0 clamp(2rem, 6vh, 5rem);
+  color: var(--color-accent-muted);
+  font: 0.65rem/1 var(--font-mono);
+  letter-spacing: 0.32em;
+}
+
+.hero h1 {
+  margin: 0 0 clamp(2rem, 6vh, 4rem);
+  font-size: clamp(4.6rem, 14vw, 10.8rem);
+  font-weight: 300;
+  line-height: 0.78;
+  letter-spacing: 0.09em;
+}
+
+.hero h1 span {
+  display: block;
+}
+
+.hero h1 span:last-child {
+  margin-left: clamp(2.5rem, 10vw, 9rem);
+  color: #c7bbaa;
+}
+
+.lead {
+  margin: 0 0 2.5rem;
+  color: var(--color-muted);
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  line-height: 2;
+  letter-spacing: 0.1em;
+}
+
+.footer {
+  position: absolute;
+  z-index: 2;
+  right: clamp(1.5rem, 4vw, 3.5rem);
+  bottom: clamp(1.5rem, 4vw, 3.5rem);
+  left: clamp(1.5rem, 4vw, 3.5rem);
+  display: flex;
+  justify-content: space-between;
+  color: var(--color-faint);
+  font: 0.66rem/1.4 var(--font-mono);
+  letter-spacing: 0.08em;
+}
+
+.footer button {
+  border: 0;
+  border-bottom: 1px solid rgb(215 181 137 / 20%);
+  padding: 0 0 0.25rem;
+  color: var(--color-dim);
+  background: transparent;
+  cursor: pointer;
+}
+
+@media (max-width: 680px) {
+  .hero {
+    padding-left: 0;
+  }
+
+  .hero h1 {
+    font-size: clamp(4.2rem, 25vw, 7rem);
+  }
+
+  .footer {
+    gap: 1rem;
+    align-items: flex-end;
+  }
+
+  .footer span {
+    max-width: 11rem;
+  }
+}

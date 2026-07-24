@@ -1,8 +1,17 @@
 :root {
-  color: #e7dfd1;
-  background: #090806;
-  font-family:
-    "Noto Serif SC", "Source Han Serif SC", "Songti SC", "SimSun", serif;
+  --color-bg: #090806;
+  --color-text: #e7dfd1;
+  --color-muted: #aaa195;
+  --color-dim: #807970;
+  --color-faint: #5e5952;
+  --color-accent: #d1a976;
+  --color-accent-muted: #9d7f5d;
+  --font-display: 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', 'SimSun', serif;
+  --font-mono: 'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  color: var(--color-text);
+  background: var(--color-bg);
+  font-family: var(--font-display);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
 }
@@ -21,6 +30,9 @@ body,
 
 body {
   min-height: 100svh;
+  overflow-x: hidden;
+  background:
+    radial-gradient(circle at 45% -20%, rgb(175 119 75 / 8%), transparent 35rem), var(--color-bg);
 }
 
 button,
@@ -33,49 +45,35 @@ button {
   color: inherit;
 }
 
-.app-shell {
-  min-height: 100svh;
-  display: grid;
-  place-content: center;
-  justify-items: center;
+a {
+  color: inherit;
+}
+
+::selection {
+  color: #15100b;
+  background: #d4b184;
+}
+
+.primary-action {
+  min-width: 11rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 1.5rem;
-  padding: 2rem;
-  text-align: center;
-  background:
-    radial-gradient(circle at 52% 43%, rgb(170 112 65 / 10%), transparent 28rem),
-    #090806;
-}
-
-.app-shell h1 {
-  margin: 0;
-  font-size: clamp(3.4rem, 12vw, 8rem);
-  font-weight: 400;
-  letter-spacing: 0.16em;
-}
-
-.app-shell p {
-  max-width: 34rem;
-  margin: 0;
-  color: #aaa195;
-  line-height: 1.9;
-}
-
-.app-shell .eyebrow {
-  color: #8d7a65;
-  font: 0.68rem/1.2 ui-monospace, "SFMono-Regular", Consolas, monospace;
-  letter-spacing: 0.32em;
-}
-
-.app-shell button {
-  margin-top: 1rem;
   border: 1px solid rgb(225 194 155 / 36%);
-  border-radius: 999px;
-  padding: 0.85rem 1.8rem;
+  border-radius: 0;
+  padding: 0.95rem 1.2rem;
   background: rgb(255 255 255 / 2%);
   cursor: pointer;
+  font-size: 0.84rem;
+  letter-spacing: 0.12em;
+  transition:
+    color 0.3s ease,
+    border-color 0.3s ease,
+    background-color 0.3s ease;
 }
 
-.app-shell button:hover {
+.primary-action:hover {
   border-color: rgb(225 194 155 / 80%);
   background: rgb(225 194 155 / 7%);
 }
@@ -83,4 +81,15 @@ button {
 :focus-visible {
   outline: 2px solid #d6ae79;
   outline-offset: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

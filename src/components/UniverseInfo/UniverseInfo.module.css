@@ -1,0 +1,118 @@
+.info {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  padding: max(1.4rem, env(safe-area-inset-top)) max(1.4rem, env(safe-area-inset-right))
+    max(1.4rem, env(safe-area-inset-bottom)) max(1.4rem, env(safe-area-inset-left));
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  pointer-events: none;
+  transition: opacity 0.8s var(--ease-out);
+}
+
+.info header {
+  display: flex;
+  justify-content: space-between;
+  color: var(--color-faint);
+  font: 0.6rem/1 var(--font-mono);
+  letter-spacing: 0.22em;
+}
+
+.info header strong {
+  color: var(--color-dim);
+  font-weight: 400;
+}
+
+.info section {
+  width: min(24rem, 72vw);
+  align-self: center;
+}
+
+.type {
+  margin: 0 0 1.2rem;
+  color: var(--color-accent-muted);
+  font: 0.68rem/1.5 var(--font-mono);
+  letter-spacing: 0.18em;
+}
+
+.info blockquote {
+  margin: 0 0 2rem;
+  font-size: clamp(1.25rem, 2.4vw, 2rem);
+  line-height: 1.8;
+  letter-spacing: 0.06em;
+}
+
+.info dl {
+  display: flex;
+  gap: 2rem;
+}
+
+.info dl > div {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.info dt {
+  color: var(--color-faint);
+  font-size: 0.68rem;
+}
+
+.info dd {
+  margin: 0;
+  font: 1rem/1 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.info footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.8rem;
+  pointer-events: auto;
+}
+
+.info button {
+  border: 1px solid rgb(221 193 157 / 18%);
+  border-radius: 999px;
+  padding: 0.68rem 1rem;
+  color: var(--color-dim);
+  background: rgb(7 6 5 / 30%);
+  backdrop-filter: blur(12px);
+  cursor: pointer;
+  font-size: 0.76rem;
+}
+
+.info button:hover {
+  border-color: rgb(221 193 157 / 45%);
+  color: var(--color-text);
+}
+
+.info .save {
+  border-color: rgb(221 193 157 / 42%);
+  color: var(--color-text);
+}
+
+.quiet {
+  opacity: 0.12;
+}
+
+.quiet:hover,
+.quiet:focus-within {
+  opacity: 1;
+}
+
+@media (max-width: 680px) {
+  .info section {
+    width: min(92vw, 30rem);
+    align-self: end;
+    margin-bottom: 5.5rem;
+  }
+
+  .info footer {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .info button {
+    min-height: 2.8rem;
+  }
+}
