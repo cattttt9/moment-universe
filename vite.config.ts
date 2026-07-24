@@ -10,6 +10,16 @@ export default defineConfig({
   build: {
     target: 'es2020',
     sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('three/examples/jsm/postprocessing')) return 'three-postprocessing';
+          if (id.includes('node_modules/three')) return 'three-runtime';
+          if (id.includes('node_modules/gsap')) return 'motion-runtime';
+          if (id.includes('node_modules/react')) return 'react-runtime';
+        },
+      },
+    },
   },
   test: {
     environment: 'jsdom',
