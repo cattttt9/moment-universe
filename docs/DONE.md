@@ -1,6 +1,44 @@
 # 已完成能力
 
-所有日期均为 2026-07-24。
+未单独注明的首版能力完成于 2026-07-24。
+
+## 可拖动 OrbitDial
+
+- 状态：已完成（2026-07-25）
+- 文件：
+  - `src/components/OrbitDial/`
+  - `src/tests/orbitMath.test.ts`
+- 验证：
+  - 浏览器实测鼠标拖动、轨道点击、方向键和 Page Up / Page Down
+  - 单元测试覆盖角度、值、死区连续性和参数边界
+
+## 共享 UniverseStage 与三层空间
+
+- 状态：已完成（2026-07-25）
+- 文件：
+  - `src/scene/UniverseStage.ts`
+  - `src/scene/FarStarField.ts`
+  - `src/scene/MidDustField.ts`
+  - `src/scene/ForegroundMotes.ts`
+  - `src/scene/CameraRig.ts`
+- 验证：
+  - 五个页面阶段共享一个 Canvas、renderer 和 RAF
+  - 桌面与 390×844 视口正常渲染
+  - 页面隐藏暂停、销毁路径和自适应像素比已实现
+
+## 宇宙原型系统与后处理
+
+- 状态：已完成（2026-07-25）
+- 文件：
+  - `src/engine/archetypes/`
+  - `src/engine/universeGenerator.ts`
+  - `src/scene/ProceduralNebula.ts`
+  - `src/scene/PostProcessing.ts`
+- 验证：
+  - 八种原型均能生成有限、合法且确定性的粒子
+  - 八套调色板选择稳定
+  - 三个指定案例在至少六个视觉维度上不同
+  - low 档关闭后处理；持续低帧率会降低像素比并关闭 Bloom
 
 ## 工程与质量工具
 

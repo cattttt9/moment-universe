@@ -2,6 +2,22 @@
 
 本项目遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 的结构。
 
+## [Unreleased]
+
+### Added
+
+- 全流程共享的 Three.js `UniverseStage`
+- 远景星空、中景星尘、前景虚焦粒子与 CameraRig
+- 八种确定性宇宙原型和八套克制色板
+- OrbitDial 圆周拖动、触摸与键盘交互
+- 实时参数预览、输入字符粒子回声和运行时帧率降档
+- ACES、质量分级 Bloom、程序化雾化与星核表面流动
+
+### Changed
+
+- 结果页采用种子驱动的尺度、偏置、观察角度和运动形式
+- 生成转场与最终宇宙共用同一 WebGL 空间
+
 ## [0.1.0] - 2026-07-24
 
 ### Added
