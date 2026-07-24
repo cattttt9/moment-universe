@@ -1,5 +1,6 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import type { QualityLevel, UniverseBlueprint } from '../../types/universe';
+import { PosterExporter } from '../PosterExporter/PosterExporter';
 import { UniverseCanvas, type UniverseCanvasHandle } from '../UniverseCanvas/UniverseCanvas';
 import { UniverseInfo } from '../UniverseInfo/UniverseInfo';
 import styles from './UniverseResult.module.css';
@@ -24,6 +25,14 @@ export function UniverseResult({
   onRestart,
 }: UniverseResultProps) {
   const canvasRef = useRef<UniverseCanvasHandle>(null);
+  const [posterOpen, setPosterOpen] = useState(false);
+  const [sceneDataUrl, setSceneDataUrl] = useState<string | null>(null);
+
+  const save = () => {
+    onSave();
+    setSceneDataUrl(canvasRef.current?.capture() ?? null);
+    setPosterOpen(true);
+  };
 
   return (
     <main className={styles.screen}>
@@ -32,11 +41,17 @@ export function UniverseResult({
         config={blueprint.config}
         quiet={quiet}
         onQuietToggle={onQuietToggle}
-        onSave={onSave}
+        onSave={save}
         onEdit={onEdit}
         onRestart={onRestart}
       />
       <p className={styles.hint}>移动以扰动 · 长按以聚集 · 双击产生脉冲 · 滚动缩放</p>
+      <PosterExporter
+        open={posterOpen}
+        blueprint={blueprint}
+        sceneDataUrl={sceneDataUrl}
+        onClose={() => setPosterOpen(false)}
+      />
     </main>
   );
 }
