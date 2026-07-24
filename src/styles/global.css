@@ -1,0 +1,86 @@
+:root {
+  color: #e7dfd1;
+  background: #090806;
+  font-family:
+    "Noto Serif SC", "Source Han Serif SC", "Songti SC", "SimSun", serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-width: 320px;
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  min-height: 100svh;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+button {
+  color: inherit;
+}
+
+.app-shell {
+  min-height: 100svh;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 1.5rem;
+  padding: 2rem;
+  text-align: center;
+  background:
+    radial-gradient(circle at 52% 43%, rgb(170 112 65 / 10%), transparent 28rem),
+    #090806;
+}
+
+.app-shell h1 {
+  margin: 0;
+  font-size: clamp(3.4rem, 12vw, 8rem);
+  font-weight: 400;
+  letter-spacing: 0.16em;
+}
+
+.app-shell p {
+  max-width: 34rem;
+  margin: 0;
+  color: #aaa195;
+  line-height: 1.9;
+}
+
+.app-shell .eyebrow {
+  color: #8d7a65;
+  font: 0.68rem/1.2 ui-monospace, "SFMono-Regular", Consolas, monospace;
+  letter-spacing: 0.32em;
+}
+
+.app-shell button {
+  margin-top: 1rem;
+  border: 1px solid rgb(225 194 155 / 36%);
+  border-radius: 999px;
+  padding: 0.85rem 1.8rem;
+  background: rgb(255 255 255 / 2%);
+  cursor: pointer;
+}
+
+.app-shell button:hover {
+  border-color: rgb(225 194 155 / 80%);
+  background: rgb(225 194 155 / 7%);
+}
+
+:focus-visible {
+  outline: 2px solid #d6ae79;
+  outline-offset: 4px;
+}
