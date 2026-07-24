@@ -1,9 +1,14 @@
-import { useRef, useState } from 'react';
+import { lazy, Suspense, useRef, useState } from 'react';
 import type { QualityLevel, UniverseBlueprint } from '../../types/universe';
 import { PosterExporter } from '../PosterExporter/PosterExporter';
-import { UniverseCanvas, type UniverseCanvasHandle } from '../UniverseCanvas/UniverseCanvas';
+import type { UniverseCanvasHandle } from '../UniverseCanvas/UniverseCanvas';
 import { UniverseInfo } from '../UniverseInfo/UniverseInfo';
 import styles from './UniverseResult.module.css';
+
+const UniverseCanvas = lazy(async () => {
+  const module = await import('../UniverseCanvas/UniverseCanvas');
+  return { default: module.UniverseCanvas };
+});
 
 interface UniverseResultProps {
   blueprint: UniverseBlueprint;
@@ -36,7 +41,16 @@ export function UniverseResult({
 
   return (
     <main className={styles.screen}>
-      <UniverseCanvas ref={canvasRef} blueprint={blueprint} quality={quality} quiet={quiet} />
+      <Suspense
+        fallback={
+          <div className={styles.loading} role="status">
+            <span aria-hidden="true">·</span>
+            正在点亮星核
+          </div>
+        }
+      >
+        <UniverseCanvas ref={canvasRef} blueprint={blueprint} quality={quality} quiet={quiet} />
+      </Suspense>
       <UniverseInfo
         config={blueprint.config}
         quiet={quiet}

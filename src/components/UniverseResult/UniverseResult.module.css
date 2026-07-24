@@ -5,6 +5,31 @@
   background: #050403;
 }
 
+.loading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  gap: 0.8rem;
+  color: var(--color-faint);
+  background: #050403;
+  font: 0.62rem/1 var(--font-mono);
+  letter-spacing: 0.18em;
+  text-align: center;
+}
+
+.loading span {
+  color: var(--color-accent);
+  font-size: 2rem;
+  animation: loading-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes loading-pulse {
+  50% {
+    opacity: 0.2;
+  }
+}
+
 .hint {
   position: absolute;
   z-index: 4;
