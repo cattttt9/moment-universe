@@ -1,7 +1,7 @@
 import { PARAMETER_COPY } from '../../constants/universe';
 import type { UniverseParameters } from '../../types/universe';
+import { OrbitDial } from '../OrbitDial/OrbitDial';
 import { StageFrame } from '../StageFrame/StageFrame';
-import { OrbitControl } from './OrbitControl';
 import styles from './UniverseControls.module.css';
 
 interface UniverseControlsProps {
@@ -35,7 +35,7 @@ export function UniverseControls({
         </header>
         <div className={styles.controls}>
           {(Object.keys(PARAMETER_COPY) as (keyof UniverseParameters)[]).map((key) => (
-            <OrbitControl
+            <OrbitDial
               key={key}
               {...PARAMETER_COPY[key]}
               value={parameters[key]}
