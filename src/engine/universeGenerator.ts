@@ -1,12 +1,15 @@
 import { QUALITY_PARTICLE_COUNTS, TEXT_LIMIT } from '../constants/universe';
 import type {
-  ParticleBlueprint,
+  CameraPreset,
   QualityLevel,
+  UniverseArchetype,
   UniverseBlueprint,
   UniverseConfig,
   UniversePalette,
   UniverseParameters,
+  UniverseVisualProfile,
 } from '../types/universe';
+import { buildArchetypeParticles, UNIVERSE_ARCHETYPES } from './archetypes';
 import { createSeededRandom } from './seededRandom';
 import { countPunctuation, normalizeUniverseText, textHash } from './textHash';
 
@@ -36,12 +39,24 @@ const HIDDEN_TYPES = [
   '低电量开发者星系',
 ] as const;
 
-const PALETTES: UniversePalette[] = [
-  { core: '#f2d29b', inner: '#c27649', outer: '#5f5145', haze: '#8a4f32' },
-  { core: '#f0c6a1', inner: '#a85a43', outer: '#555c55', haze: '#693a30' },
-  { core: '#e9d7b6', inner: '#b89a72', outer: '#6d645b', haze: '#6f543d' },
-  { core: '#f1b879', inner: '#b7633e', outer: '#4f5c56', haze: '#824326' },
-  { core: '#e8c8ad', inner: '#976c58', outer: '#5d5550', haze: '#62443b' },
+export const UNIVERSE_PALETTES: UniversePalette[] = [
+  { name: '琥珀金', core: '#f1d3a0', inner: '#c98850', outer: '#756553', haze: '#9a5b38' },
+  { name: '冷灰蓝', core: '#dce6e8', inner: '#8ca4ac', outer: '#59666b', haze: '#526c75' },
+  { name: '深红铜', core: '#edc0a0', inner: '#a6533f', outer: '#613d39', haze: '#7c342d' },
+  { name: '青绿色', core: '#d5e4d5', inner: '#71a18f', outer: '#486c65', haze: '#32675f' },
+  { name: '月白色', core: '#f0ede2', inner: '#c9c7bb', outer: '#777a78', haze: '#8b8e89' },
+  { name: '暗紫灰', core: '#dfd4df', inner: '#948294', outer: '#5b5360', haze: '#59455f' },
+  { name: '沙金色', core: '#ead7af', inner: '#b99a66', outer: '#706149', haze: '#86683f' },
+  { name: '冰蓝色', core: '#e4f0ef', inner: '#9bbbc2', outer: '#557079', haze: '#487986' },
+];
+
+const CAMERA_PRESETS: CameraPreset[] = [
+  'left-offset',
+  'right-offset',
+  'diagonal',
+  'close',
+  'distant',
+  'dual-center',
 ];
 
 export function clampParameter(value: number) {
@@ -103,32 +118,46 @@ export function createUniverseConfig(
   };
 }
 
-function createParticle(
-  index: number,
-  count: number,
-  config: UniverseConfig,
-  armCount: number,
-): ParticleBlueprint {
-  const random = createSeededRandom(`${config.seed}:particle:${index}`);
-  const normalizedRadius = Math.pow((index + random.next()) / count, 0.58);
-  const order = config.order / 100;
-  const fluctuation = config.fluctuation / 100;
-  const arm = index % armCount;
-  const baseAngle = (arm / armCount) * Math.PI * 2;
-  const spiral = normalizedRadius * (3.5 + order * 4.8);
-  const angle = baseAngle + spiral + random.signed() * (1.25 - order * 0.95);
-  const radius = 0.25 + normalizedRadius * (4.5 + config.energy * 0.018);
-  const flattening = 0.24 + (1 - order) * 0.34;
-  const turbulence = random.signed() * fluctuation * normalizedRadius * 1.1;
+export function selectUniverseArchetype(seed: string): UniverseArchetype {
+  const index = Number.parseInt(seed.slice(0, 8), 16) % UNIVERSE_ARCHETYPES.length;
+  return UNIVERSE_ARCHETYPES[index]!;
+}
 
+export function generateVisualProfile(config: UniverseConfig): UniverseVisualProfile {
+  const random = createSeededRandom(`${config.seed}:visual-profile`);
+  const archetype = selectUniverseArchetype(config.seed);
+  const punctuation = countPunctuation(config.text);
+  const paletteIndex = Number.parseInt(config.seed.slice(2, 8), 16) % UNIVERSE_PALETTES.length;
+  const archetypeCoreCounts: Record<UniverseArchetype, number> = {
+    'spiral-galaxy': 1,
+    'accretion-disk': 1,
+    'binary-system': 2,
+    'drifting-nebula': 1 + (punctuation % 2),
+    'ring-nebula': 1,
+    'filament-cluster': 2 + (punctuation % 2),
+    pulsar: 1,
+    'void-system': 0,
+  };
   return {
-    x: Math.cos(angle) * radius + turbulence,
-    y: random.signed() * flattening * (0.3 + normalizedRadius) + turbulence * 0.2,
-    z: Math.sin(angle) * radius + random.signed() * (1 - order) * 0.65,
-    size: random.range(0.55, 1.85) * (0.8 + config.energy / 180),
-    phase: random.range(0, Math.PI * 2),
-    branch: arm,
-    brightness: random.range(0.45, 1) * (0.65 + config.energy / 180),
+    archetype,
+    seed: config.seed,
+    palette: UNIVERSE_PALETTES[paletteIndex]!,
+    coreCount: archetypeCoreCounts[archetype],
+    armCount: 2 + ((Number.parseInt(config.seed.slice(4, 6), 16) + punctuation) % 5),
+    orientation: {
+      x: random.range(-0.55, 0.42),
+      y: random.range(-0.7, 0.7),
+      z: random.range(-0.38, 0.38),
+    },
+    scale: random.range(1.45, 1.88) + config.energy / 360,
+    density: 0.72 + config.text.length / 240 + config.energy / 360,
+    spread: 0.78 + config.energy / 220 + (100 - config.order) / 520,
+    symmetry: config.order / 100,
+    turbulence: Math.min(1, config.fluctuation / 100 + (100 - config.order) / 330),
+    pulse: 0.12 + config.fluctuation / 105,
+    emission: 0.55 + config.energy / 125,
+    cameraPreset:
+      CAMERA_PRESETS[Number.parseInt(config.seed.slice(-6), 16) % CAMERA_PRESETS.length]!,
   };
 }
 
@@ -137,23 +166,19 @@ export function generateUniverseBlueprint(
   quality: QualityLevel = 'medium',
 ): UniverseBlueprint {
   const random = createSeededRandom(`${config.seed}:structure`);
-  const punctuation = countPunctuation(config.text);
   const baseCount = QUALITY_PARTICLE_COUNTS[quality];
   const lengthFactor = 0.7 + Math.min(config.text.length, TEXT_LIMIT) / 180;
-  const particleCount = Math.round(baseCount * lengthFactor);
-  const armCount = 2 + ((Number.parseInt(config.seed.slice(0, 2), 16) + punctuation) % 4);
-  const coreCount = 1 + Math.min(2, punctuation % 3);
-  const palette = PALETTES[Number.parseInt(config.seed.slice(2, 4), 16) % PALETTES.length]!;
-  const particles: ParticleBlueprint[] = Array.from({ length: particleCount }, (_, index) =>
-    createParticle(index, particleCount, config, armCount),
-  );
+  const profile = generateVisualProfile(config);
+  const particleCount = Math.round(baseCount * lengthFactor * profile.density);
+  const particles = buildArchetypeParticles({ config, profile, count: particleCount });
 
   return {
     config,
-    palette,
+    palette: profile.palette,
+    profile,
     particles,
-    coreCount,
-    armCount,
+    coreCount: profile.coreCount,
+    armCount: profile.armCount,
     orbitEccentricity: 0.15 + (1 - config.order / 100) * 0.48 + random.range(-0.04, 0.04),
     pulseRate: 0.22 + config.fluctuation / 125 + config.energy / 480,
   };

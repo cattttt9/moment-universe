@@ -17,10 +17,50 @@ export interface UniverseConfig extends UniverseParameters {
 }
 
 export interface UniversePalette {
+  name: string;
   core: string;
   inner: string;
   outer: string;
   haze: string;
+}
+
+export type UniverseArchetype =
+  | 'spiral-galaxy'
+  | 'accretion-disk'
+  | 'binary-system'
+  | 'drifting-nebula'
+  | 'ring-nebula'
+  | 'filament-cluster'
+  | 'pulsar'
+  | 'void-system';
+
+export type CameraPreset =
+  | 'left-offset'
+  | 'right-offset'
+  | 'diagonal'
+  | 'close'
+  | 'distant'
+  | 'dual-center';
+
+export interface UniverseVisualProfile {
+  archetype: UniverseArchetype;
+  seed: string;
+  palette: UniversePalette;
+  coreCount: number;
+  armCount: number;
+  orientation: {
+    x: number;
+    y: number;
+    z: number;
+  };
+  scale: number;
+  density: number;
+  spread: number;
+  symmetry: number;
+  turbulence: number;
+  pulse: number;
+  emission: number;
+  cameraPreset: CameraPreset;
 }
 
 export interface ParticleBlueprint {
@@ -36,6 +76,7 @@ export interface ParticleBlueprint {
 export interface UniverseBlueprint {
   config: UniverseConfig;
   palette: UniversePalette;
+  profile: UniverseVisualProfile;
   particles: ParticleBlueprint[];
   coreCount: number;
   armCount: number;
