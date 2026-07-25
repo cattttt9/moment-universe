@@ -8,15 +8,27 @@ import { UniverseControls } from './components/UniverseControls/UniverseControls
 import { UniverseResult } from './components/UniverseResult/UniverseResult';
 import { UniverseStage, type UniverseStageHandle } from './components/UniverseStage/UniverseStage';
 import { createUniverseConfig, generateUniverseBlueprint } from './engine/universeGenerator';
+import { createGravityBodies, getGravityScore } from './engine/gravityCalibration';
 import { useQualityLevel } from './hooks/useQualityLevel';
 import { useReducedMotion } from './hooks/useReducedMotion';
+import { useCosmicAudio } from './hooks/useCosmicAudio';
 import { clearHistory, loadHistory, saveUniverse } from './stores/historyStore';
 import type {
   AppStage,
+  GravityCalibrationState,
+  QualityLevel,
   StoredUniverse,
   UniverseConfig,
   UniverseParameters,
 } from './types/universe';
+
+const initialGravityBodies = createGravityBodies(DEFAULT_PARAMETERS);
+const INITIAL_CALIBRATION: GravityCalibrationState = {
+  bodies: initialGravityBodies,
+  score: getGravityScore(initialGravityBodies),
+  stable: false,
+  dragging: null,
+};
 
 export function App() {
   const [stage, setStage] = useState<AppStage>('intro');
@@ -30,9 +42,14 @@ export function App() {
   const [inputActivity, setInputActivity] = useState(0);
   const [revealed, setRevealed] = useState(false);
   const [introAttraction, setIntroAttraction] = useState(false);
+  const [calibration, setCalibration] = useState<GravityCalibrationState>(INITIAL_CALIBRATION);
+  const [qualityOverride, setQualityOverride] = useState<QualityLevel | null>(null);
+  const [audioEnabled, setAudioEnabled] = useState(false);
   const universeStageRef = useRef<UniverseStageHandle>(null);
-  const quality = useQualityLevel();
+  const autoQuality = useQualityLevel();
+  const quality = qualityOverride ?? autoQuality;
   const reducedMotion = useReducedMotion();
+  useCosmicAudio(audioEnabled, stage, parameters);
 
   const blueprint = useMemo(
     () => (config ? generateUniverseBlueprint(config, quality) : null),
@@ -40,7 +57,8 @@ export function App() {
   );
 
   const beginGeneration = () => {
-    setConfig(createUniverseConfig(sentence, parameters));
+    const createdAt = new Date().toISOString();
+    setConfig(createUniverseConfig(sentence, parameters, createdAt, createdAt));
     setQuiet(false);
     setTransitionProgress(0);
     setRevealed(false);
@@ -82,6 +100,11 @@ export function App() {
         inputLength={sentence.length}
         introAttraction={introAttraction}
         onReveal={() => setRevealed(true)}
+        onCalibrationChange={(nextParameters, nextCalibration) => {
+          setParameters(nextParameters);
+          setCalibration(nextCalibration);
+        }}
+        onCalibrationComplete={beginGeneration}
       />
       {stage === 'intro' && (
         <IntroScreen
@@ -104,7 +127,7 @@ export function App() {
         <UniverseControls
           text={sentence}
           parameters={parameters}
-          onChange={setParameters}
+          calibration={calibration}
           onBack={() => setStage('sentence')}
           onGenerate={beginGeneration}
         />
@@ -129,6 +152,9 @@ export function App() {
           captureScene={() => universeStageRef.current?.capture() ?? null}
           revealed={revealed}
           onHideReveal={() => setRevealed(false)}
+          audioEnabled={audioEnabled}
+          onAudioToggle={() => setAudioEnabled((current) => !current)}
+          onQualityChange={setQualityOverride}
         />
       )}
       <HistoryDrawer

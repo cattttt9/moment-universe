@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { QUALITY_PIXEL_RATIOS } from '../constants/universe';
 import type {
   AppStage,
+  GravityCalibrationState,
   QualityLevel,
   UniverseBlueprint,
   UniverseParameters,
@@ -9,6 +10,8 @@ import type {
 import { CameraRig } from './CameraRig';
 import { FarStarField } from './FarStarField';
 import { ForegroundMotes } from './ForegroundMotes';
+import { GalaxyBackdrop } from './GalaxyBackdrop';
+import { GravityCalibrationField } from './GravityCalibrationField';
 import { InputEchoField } from './InputEchoField';
 import { MidDustField } from './MidDustField';
 import { PointerGravity } from './PointerGravity';
@@ -34,6 +37,8 @@ export class UniverseStage {
   private readonly farStars: FarStarField;
   private readonly midDust: MidDustField;
   private readonly foreground: ForegroundMotes;
+  private readonly galaxy: GalaxyBackdrop;
+  private readonly calibration: GravityCalibrationField;
   private readonly inputEcho: InputEchoField;
   private readonly nebula: ProceduralNebula;
   private readonly pointerGravity: PointerGravity;
@@ -55,6 +60,11 @@ export class UniverseStage {
     quality: QualityLevel,
     reducedMotion: boolean,
     private readonly onReveal: () => void,
+    private readonly onCalibrationChange: (
+      parameters: UniverseParameters,
+      state: GravityCalibrationState,
+    ) => void,
+    private readonly onCalibrationComplete: () => void,
   ) {
     this.state = initialState;
     this.scene.background = new THREE.Color('#050403');
@@ -80,12 +90,25 @@ export class UniverseStage {
     this.farStars = new FarStarField(quality);
     this.midDust = new MidDustField(quality, this.pixelRatio);
     this.foreground = new ForegroundMotes(quality);
+    this.galaxy = new GalaxyBackdrop(quality);
     this.inputEcho = new InputEchoField();
     this.nebula = new ProceduralNebula(initialState.parameters, quality, this.pixelRatio);
+    this.calibration = new GravityCalibrationField(
+      this.camera,
+      this.renderer.domElement,
+      initialState.parameters,
+      {
+        onChange: this.onCalibrationChange,
+        onComplete: this.onCalibrationComplete,
+      },
+      quality,
+    );
     this.scene.add(
+      this.galaxy.group,
       this.farStars.points,
       this.midDust.points,
       this.nebula.group,
+      this.calibration.group,
       this.inputEcho.points,
       this.foreground.points,
     );
@@ -107,6 +130,7 @@ export class UniverseStage {
     this.state = next;
     this.cameraRig.setStage(next.stage, next.blueprint?.profile.cameraPreset);
     this.pointerGravity.setActive(next.stage === 'universe');
+    this.calibration.setActive(next.stage === 'parameters');
     this.nebula.setStage(next.stage);
     this.nebula.setTransitionProgress(next.transitionProgress);
     this.nebula.setParameters(next.parameters);
@@ -134,8 +158,10 @@ export class UniverseStage {
     this.farStars.dispose();
     this.midDust.dispose();
     this.foreground.dispose();
+    this.galaxy.dispose();
     this.inputEcho.dispose();
     this.nebula.dispose();
+    this.calibration.dispose();
     this.postProcessing.dispose();
     this.scene.clear();
     this.renderer.dispose();
@@ -148,6 +174,7 @@ export class UniverseStage {
     this.renderer.setSize(width, height, false);
     this.camera.aspect = width / Math.max(height, 1);
     this.camera.updateProjectionMatrix();
+    this.calibration.setViewport(width, height);
     this.postProcessing.setSize(width, height);
   };
 
@@ -208,6 +235,12 @@ export class UniverseStage {
     this.farStars.update(this.elapsed, this.state.quiet);
     this.midDust.update(this.elapsed, fieldPointer, interaction, this.state.quiet);
     this.foreground.update(this.elapsed, this.pointerGravity.pointer, this.state.quiet);
+    this.galaxy.update(
+      this.elapsed,
+      this.pointerGravity.pointer,
+      this.state.stage,
+      this.state.quiet,
+    );
     this.inputEcho.update(this.elapsed, delta);
     this.nebula.update(
       this.elapsed,
@@ -217,6 +250,7 @@ export class UniverseStage {
       this.pointerGravity.attracting,
       this.state.quiet,
     );
+    this.calibration.update(this.elapsed, delta);
     this.renderer.toneMappingExposure = THREE.MathUtils.damp(
       this.renderer.toneMappingExposure,
       0.72 + this.state.parameters.energy / 310,

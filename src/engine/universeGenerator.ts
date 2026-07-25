@@ -5,6 +5,9 @@ import type {
   UniverseArchetype,
   UniverseBlueprint,
   UniverseConfig,
+  CosmicPhenomenon,
+  PlanetBlueprint,
+  PlanetMaterial,
   UniversePalette,
   UniverseParameters,
   UniverseVisualProfile,
@@ -59,6 +62,36 @@ const CAMERA_PRESETS: CameraPreset[] = [
   'dual-center',
 ];
 
+const PLANET_MATERIALS: PlanetMaterial[] = ['rock', 'gas', 'ice', 'volcanic', 'ocean'];
+
+const PHENOMENA: CosmicPhenomenon[] = [
+  'comet',
+  'lensing',
+  'rift',
+  'black-hole',
+  'supernova-remnant',
+  'dust-wind',
+  'orbital-resonance',
+];
+
+const MAIN_STARS = [
+  '低温橙星',
+  '银白主序星',
+  '青色亚巨星',
+  '暗红矮星',
+  '冰白脉冲星',
+  '双生金色恒星',
+] as const;
+
+const GRAVITY_TENDENCIES = [
+  '缓慢坍缩',
+  '稳定绕行',
+  '轻微扩张',
+  '潮汐偏移',
+  '双核共振',
+  '局部失重',
+] as const;
+
 export function clampParameter(value: number) {
   if (!Number.isFinite(value)) return 50;
   return Math.max(0, Math.min(100, Math.round(value)));
@@ -72,10 +105,10 @@ export function normalizeParameters(parameters: UniverseParameters): UniversePar
   };
 }
 
-export function buildUniverseSeed(text: string, parameters: UniverseParameters) {
+export function buildUniverseSeed(text: string, parameters: UniverseParameters, variation = '') {
   const normalized = normalizeParameters(parameters);
   return textHash(
-    `${normalizeUniverseText(text)}|${normalized.energy}|${normalized.order}|${normalized.fluctuation}`,
+    `${normalizeUniverseText(text)}|${normalized.energy}|${normalized.order}|${normalized.fluctuation}|${variation}`,
   );
 }
 
@@ -103,11 +136,12 @@ export function createUniverseConfig(
   text: string,
   parameters: UniverseParameters,
   createdAt = new Date().toISOString(),
+  variation = '',
 ): UniverseConfig {
   const normalizedText = normalizeUniverseText(text).slice(0, TEXT_LIMIT);
   if (!normalizedText) throw new Error('生成宇宙需要至少一个可见字符。');
   const normalized = normalizeParameters(parameters);
-  const seed = buildUniverseSeed(normalizedText, normalized);
+  const seed = buildUniverseSeed(normalizedText, normalized, variation);
   return {
     text: normalizedText,
     seed,
@@ -171,6 +205,48 @@ export function generateUniverseBlueprint(
   const profile = generateVisualProfile(config);
   const particleCount = Math.round(baseCount * lengthFactor * profile.density);
   const particles = buildArchetypeParticles({ config, profile, count: particleCount });
+  const planetRandom = createSeededRandom(`${config.seed}:planet-system`);
+  const planetCount =
+    profile.archetype === 'void-system'
+      ? planetRandom.integer(0, 2)
+      : profile.archetype === 'binary-system'
+        ? planetRandom.integer(1, 4)
+        : planetRandom.integer(2, 6);
+  const planets: PlanetBlueprint[] = Array.from({ length: planetCount }, (_, index) => {
+    const material = planetRandom.pick(PLANET_MATERIALS);
+    const orbitRadius = 1.45 + index * planetRandom.range(0.7, 1.18);
+    return {
+      radius: planetRandom.range(0.08, index === 0 ? 0.19 : 0.3),
+      orbitRadius,
+      orbitSpeed: planetRandom.range(0.035, 0.14) / Math.sqrt(orbitRadius),
+      orbitTilt: planetRandom.range(-0.62, 0.62),
+      phase: planetRandom.range(0, Math.PI * 2),
+      rotationSpeed: planetRandom.range(-0.42, 0.58),
+      color: planetRandom.pick([
+        profile.palette.inner,
+        profile.palette.outer,
+        profile.palette.core,
+        profile.palette.haze,
+      ]),
+      accent: planetRandom.pick([
+        profile.palette.core,
+        profile.palette.inner,
+        '#c7d5d7',
+        '#8d5c43',
+        '#6c8d87',
+      ]),
+      material,
+      atmosphere: planetRandom.range(0.08, material === 'gas' ? 0.82 : 0.55),
+      ring: index > 0 && planetRandom.next() < 0.24,
+      moons: planetRandom.next() < 0.34 ? planetRandom.integer(1, 2) : 0,
+    };
+  });
+  const phenomenonRandom = createSeededRandom(`${config.seed}:phenomenon`);
+  const phenomenon =
+    phenomenonRandom.next() <
+    (profile.archetype === 'void-system' || profile.archetype === 'pulsar' ? 0.84 : 0.48)
+      ? phenomenonRandom.pick(PHENOMENA)
+      : null;
 
   return {
     config,
@@ -181,5 +257,16 @@ export function generateUniverseBlueprint(
     armCount: profile.armCount,
     orbitEccentricity: 0.15 + (1 - config.order / 100) * 0.48 + random.range(-0.04, 0.04),
     pulseRate: 0.22 + config.fluctuation / 125 + config.energy / 480,
+    planets,
+    record: {
+      mainStar:
+        profile.archetype === 'binary-system'
+          ? '双生金色恒星'
+          : random.pick(MAIN_STARS.filter((name) => name !== '双生金色恒星')),
+      gravityTendency: random.pick(GRAVITY_TENDENCIES),
+      stabilityIndex: clampParameter(46 + config.order * 0.46 + random.range(-8, 8)),
+      unobservedRegion: clampParameter(18 + (100 - config.energy) * 0.42 + random.range(-6, 10)),
+      phenomenon,
+    },
   };
 }

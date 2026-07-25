@@ -12,7 +12,17 @@ interface GenerationTransitionProps {
   onComplete: () => void;
 }
 
-const statuses = ['正在采样文字微光', '校准引力与轨道', '等待星核出现', '宇宙已形成'];
+const statuses = [
+  '正在读取引力参数',
+  '正在归零空间',
+  '正在点亮第一颗恒星',
+  '正在建立恒星群',
+  '正在展开轨道',
+  '正在凝聚行星',
+  '正在扩散星云',
+  '正在生成未被观测的区域',
+  '宇宙结构已稳定',
+];
 
 export function GenerationTransition({
   text,
@@ -65,10 +75,12 @@ export function GenerationTransition({
         <div className={styles.core} aria-hidden="true" />
       </div>
       <div className={styles.status}>
-        <span>{String(Math.round(progress * 100)).padStart(3, '0')}%</span>
+        <span>PHASE {String(statusIndex + 1).padStart(2, '0')}</span>
         <p>{statuses[statusIndex]}</p>
-        <div>
-          <i style={{ width: `${progress * 100}%` }} />
+        <div className={styles.phaseLine} aria-hidden="true">
+          {statuses.map((_, index) => (
+            <i key={index} className={index <= statusIndex ? styles.phaseActive : ''} />
+          ))}
         </div>
       </div>
     </main>

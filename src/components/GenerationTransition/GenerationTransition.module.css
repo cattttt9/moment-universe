@@ -72,15 +72,24 @@
   margin: 0 0 0.7rem;
 }
 
-.status > div {
-  height: 1px;
-  background: rgb(223 194 157 / 12%);
+.phaseLine {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap: 0.38rem;
 }
 
-.status i {
+.phaseLine i {
   display: block;
   height: 1px;
+  background: rgb(223 194 157 / 11%);
+  transition:
+    background-color 420ms ease,
+    box-shadow 420ms ease;
+}
+
+.phaseLine .phaseActive {
   background: #c59062;
+  box-shadow: 0 0 0.8rem rgb(197 144 92 / 32%);
 }
 
 @media (prefers-reduced-motion: reduce) {

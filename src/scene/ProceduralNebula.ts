@@ -15,6 +15,13 @@ import type {
 interface NebulaResources {
   particleSystem: ParticleSystem;
   coreMaterials: THREE.ShaderMaterial[];
+  animatedMaterials: THREE.ShaderMaterial[];
+  orbitingBodies: {
+    pivot: THREE.Group;
+    mesh: THREE.Mesh;
+    speed: number;
+    rotationSpeed: number;
+  }[];
   geometries: THREE.BufferGeometry[];
   materials: THREE.Material[];
   textures: THREE.Texture[];
@@ -66,6 +73,52 @@ function createCoreMaterial(coreColor: string, innerColor: string, phase: number
   });
 }
 
+function createPlanetMaterial(color: string, accent: string, atmosphere: number, phase: number) {
+  return new THREE.ShaderMaterial({
+    uniforms: {
+      uTime: { value: 0 },
+      uPhase: { value: phase },
+      uAtmosphere: { value: atmosphere },
+      uColor: { value: new THREE.Color(color) },
+      uAccent: { value: new THREE.Color(accent) },
+    },
+    vertexShader: `
+      varying vec3 vNormal;
+      varying vec3 vView;
+      varying vec3 vPosition;
+      void main() {
+        vec4 viewPosition = modelViewMatrix * vec4(position, 1.0);
+        vNormal = normalize(normalMatrix * normal);
+        vView = normalize(-viewPosition.xyz);
+        vPosition = position;
+        gl_Position = projectionMatrix * viewPosition;
+      }
+    `,
+    fragmentShader: `
+      varying vec3 vNormal;
+      varying vec3 vView;
+      varying vec3 vPosition;
+      uniform float uTime;
+      uniform float uPhase;
+      uniform float uAtmosphere;
+      uniform vec3 uColor;
+      uniform vec3 uAccent;
+      void main() {
+        vec3 lightDirection = normalize(vec3(-0.55, 0.42, 0.76));
+        float diffuse = max(dot(vNormal, lightDirection), 0.0);
+        float night = smoothstep(-0.2, 0.58, diffuse);
+        float bands = sin(vPosition.y * 28.0 + sin(vPosition.x * 17.0 + uPhase) * 1.8);
+        bands += sin(vPosition.z * 37.0 - uTime * 0.09) * 0.45;
+        bands = smoothstep(-0.8, 1.0, bands);
+        float fresnel = pow(1.0 - max(dot(vNormal, vView), 0.0), 2.5);
+        vec3 surface = mix(uColor * 0.24, uColor, night * (0.52 + bands * 0.32));
+        surface = mix(surface, uAccent, bands * 0.18 + fresnel * uAtmosphere * 0.48);
+        gl_FragColor = vec4(surface, 1.0);
+      }
+    `,
+  });
+}
+
 export class ProceduralNebula {
   readonly group = new THREE.Group();
   readonly cores: THREE.Mesh[] = [];
@@ -77,10 +130,14 @@ export class ProceduralNebula {
   private transitionProgress = 0;
   private pulse = 0;
 
-  constructor(parameters: UniverseParameters, quality: QualityLevel, pixelRatio: number) {
+  constructor(
+    parameters: UniverseParameters,
+    private readonly quality: QualityLevel,
+    pixelRatio: number,
+  ) {
     this.parameters = parameters;
     const previewConfig = createUniverseConfig('此刻宇宙', parameters, PREVIEW_DATE);
-    const previewBlueprint = generateUniverseBlueprint(previewConfig, quality);
+    const previewBlueprint = generateUniverseBlueprint(previewConfig, this.quality);
     this.preview = createParticleSystem(previewBlueprint, pixelRatio);
     this.preview.points.scale.setScalar(0.76);
     this.group.add(this.preview.points);
@@ -119,10 +176,12 @@ export class ProceduralNebula {
     const materials: THREE.Material[] = [];
     const textures: THREE.Texture[] = [];
     const coreMaterials: THREE.ShaderMaterial[] = [];
+    const animatedMaterials: THREE.ShaderMaterial[] = [];
+    const orbitingBodies: NebulaResources['orbitingBodies'] = [];
     this.cores.length = 0;
 
     for (let index = 0; index < blueprint.profile.coreCount; index += 1) {
-      const geometry = new THREE.SphereGeometry(0.12 + blueprint.config.energy / 850, 28, 18);
+      const geometry = new THREE.SphereGeometry(0.18 + blueprint.config.energy / 620, 40, 26);
       const material = createCoreMaterial(
         index % 2 === 0 ? blueprint.palette.core : blueprint.palette.inner,
         blueprint.palette.inner,
@@ -136,6 +195,7 @@ export class ProceduralNebula {
       geometries.push(geometry);
       materials.push(material);
       coreMaterials.push(material);
+      animatedMaterials.push(material);
 
       const texture = createHazeTexture(
         index % 2 === 0 ? blueprint.palette.core : blueprint.palette.inner,
@@ -155,6 +215,87 @@ export class ProceduralNebula {
       textures.push(texture);
       materials.push(glowMaterial);
     }
+
+    blueprint.planets.forEach((planet) => {
+      const pivot = new THREE.Group();
+      pivot.rotation.set(planet.orbitTilt, planet.phase, blueprint.profile.orientation.z * 0.28);
+      const geometry = new THREE.SphereGeometry(
+        planet.radius,
+        this.quality === 'low' ? 18 : 30,
+        this.quality === 'low' ? 12 : 20,
+      );
+      const material = createPlanetMaterial(
+        planet.color,
+        planet.accent,
+        planet.atmosphere,
+        planet.phase,
+      );
+      const mesh = new THREE.Mesh(geometry, material);
+      mesh.position.x = planet.orbitRadius;
+      pivot.add(mesh);
+      resultGroup.add(pivot);
+      geometries.push(geometry);
+      materials.push(material);
+      animatedMaterials.push(material);
+      orbitingBodies.push({
+        pivot,
+        mesh,
+        speed: planet.orbitSpeed,
+        rotationSpeed: planet.rotationSpeed,
+      });
+
+      if (planet.atmosphere > 0.12) {
+        const atmosphereGeometry = new THREE.SphereGeometry(
+          planet.radius * (1.07 + planet.atmosphere * 0.07),
+          this.quality === 'low' ? 16 : 28,
+          this.quality === 'low' ? 10 : 18,
+        );
+        const atmosphereMaterial = new THREE.MeshBasicMaterial({
+          color: planet.accent,
+          transparent: true,
+          opacity: 0.035 + planet.atmosphere * 0.12,
+          side: THREE.BackSide,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending,
+        });
+        mesh.add(new THREE.Mesh(atmosphereGeometry, atmosphereMaterial));
+        geometries.push(atmosphereGeometry);
+        materials.push(atmosphereMaterial);
+      }
+
+      if (planet.ring) {
+        const ringGeometry = new THREE.RingGeometry(planet.radius * 1.55, planet.radius * 2.45, 72);
+        const ringMaterial = new THREE.MeshBasicMaterial({
+          color: planet.accent,
+          transparent: true,
+          opacity: 0.22,
+          side: THREE.DoubleSide,
+          depthWrite: false,
+        });
+        const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+        ring.rotation.x = Math.PI * 0.5 + planet.orbitTilt * 0.4;
+        mesh.add(ring);
+        geometries.push(ringGeometry);
+        materials.push(ringMaterial);
+      }
+
+      for (let moonIndex = 0; moonIndex < planet.moons; moonIndex += 1) {
+        const moonPivot = new THREE.Group();
+        moonPivot.rotation.y = planet.phase + moonIndex * 2.1;
+        const moonGeometry = new THREE.SphereGeometry(planet.radius * 0.18, 12, 8);
+        const moonMaterial = new THREE.MeshBasicMaterial({
+          color: blueprint.palette.outer,
+          transparent: true,
+          opacity: 0.76,
+        });
+        const moon = new THREE.Mesh(moonGeometry, moonMaterial);
+        moon.position.x = planet.radius * (2.4 + moonIndex * 0.7);
+        moonPivot.add(moon);
+        mesh.add(moonPivot);
+        geometries.push(moonGeometry);
+        materials.push(moonMaterial);
+      }
+    });
 
     const hazeLayers = blueprint.profile.archetype === 'drifting-nebula' ? 7 : 4;
     for (let index = 0; index < hazeLayers; index += 1) {
@@ -194,9 +335,11 @@ export class ProceduralNebula {
     });
     materials.push(orbitMaterial);
     const orbitCount =
-      blueprint.profile.archetype === 'void-system' ? 1 : Math.min(3, blueprint.armCount);
+      blueprint.profile.archetype === 'void-system'
+        ? Math.min(1, blueprint.planets.length)
+        : Math.min(this.quality === 'low' ? 3 : 6, blueprint.planets.length);
     for (let index = 0; index < orbitCount; index += 1) {
-      const radius = 2 + index * 1.25;
+      const radius = blueprint.planets[index]?.orbitRadius ?? 2 + index * 1.25;
       const orbitPoints = Array.from({ length: 100 }, (_, pointIndex) => {
         const angle = (pointIndex / 100) * Math.PI * 2;
         return new THREE.Vector3(
@@ -208,12 +351,96 @@ export class ProceduralNebula {
       const geometry = new THREE.BufferGeometry().setFromPoints(orbitPoints);
       const orbit = new THREE.LineLoop(geometry, orbitMaterial);
       orbit.rotation.set(
-        index * 0.15,
+        blueprint.planets[index]?.orbitTilt ?? index * 0.15,
         blueprint.profile.orientation.y,
         blueprint.profile.orientation.z,
       );
       resultGroup.add(orbit);
       geometries.push(geometry);
+    }
+
+    if (blueprint.record.phenomenon) {
+      const phenomenon = new THREE.Group();
+      phenomenon.name = `phenomenon-${blueprint.record.phenomenon}`;
+      phenomenon.position.set(
+        blueprint.profile.cameraPreset === 'left-offset' ? 2.6 : -2.8,
+        blueprint.profile.orientation.y * 1.7,
+        -0.8,
+      );
+      const phenomenonMaterial = new THREE.MeshBasicMaterial({
+        color:
+          blueprint.record.phenomenon === 'rift' ? blueprint.palette.inner : blueprint.palette.core,
+        transparent: true,
+        opacity: 0.2,
+        side: THREE.DoubleSide,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+      });
+      materials.push(phenomenonMaterial);
+
+      if (
+        blueprint.record.phenomenon === 'black-hole' ||
+        blueprint.record.phenomenon === 'lensing'
+      ) {
+        const geometry = new THREE.TorusGeometry(
+          blueprint.record.phenomenon === 'black-hole' ? 0.5 : 0.72,
+          0.025,
+          12,
+          120,
+        );
+        const torus = new THREE.Mesh(geometry, phenomenonMaterial);
+        torus.scale.y = 0.42;
+        phenomenon.add(torus);
+        geometries.push(geometry);
+        if (blueprint.record.phenomenon === 'black-hole') {
+          const voidGeometry = new THREE.SphereGeometry(0.36, 24, 16);
+          const voidMaterial = new THREE.MeshBasicMaterial({ color: '#010101' });
+          phenomenon.add(new THREE.Mesh(voidGeometry, voidMaterial));
+          geometries.push(voidGeometry);
+          materials.push(voidMaterial);
+        }
+      } else if (
+        blueprint.record.phenomenon === 'supernova-remnant' ||
+        blueprint.record.phenomenon === 'orbital-resonance'
+      ) {
+        const ringCount = blueprint.record.phenomenon === 'orbital-resonance' ? 3 : 1;
+        for (let index = 0; index < ringCount; index += 1) {
+          const geometry = new THREE.RingGeometry(0.42 + index * 0.22, 0.435 + index * 0.22, 120);
+          const ring = new THREE.Mesh(geometry, phenomenonMaterial);
+          ring.rotation.set(index * 0.34, index * 0.18, index * 0.72);
+          phenomenon.add(ring);
+          geometries.push(geometry);
+        }
+      } else {
+        const pointCount = this.quality === 'low' ? 38 : 84;
+        const positions = new Float32Array(pointCount * 3);
+        for (let index = 0; index < pointCount; index += 1) {
+          const t = index / Math.max(pointCount - 1, 1);
+          positions[index * 3] =
+            blueprint.record.phenomenon === 'rift'
+              ? Math.sin(t * 18) * 0.08
+              : -t * (2.4 + blueprint.profile.spread);
+          positions[index * 3 + 1] =
+            blueprint.record.phenomenon === 'rift'
+              ? (t - 0.5) * 2.8
+              : Math.sin(t * 11) * (0.12 + t * 0.42);
+          positions[index * 3 + 2] = Math.cos(t * 9) * 0.08;
+        }
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        const material = new THREE.PointsMaterial({
+          color: blueprint.palette.core,
+          size: blueprint.record.phenomenon === 'rift' ? 0.055 : 0.075,
+          transparent: true,
+          opacity: 0.52,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending,
+        });
+        phenomenon.add(new THREE.Points(geometry, material));
+        geometries.push(geometry);
+        materials.push(material);
+      }
+      resultGroup.add(phenomenon);
     }
 
     const preset = blueprint.profile.cameraPreset;
@@ -234,7 +461,15 @@ export class ProceduralNebula {
     resultGroup.scale.setScalar(blueprint.profile.scale);
     resultGroup.visible = false;
     this.group.add(resultGroup);
-    this.result = { particleSystem, coreMaterials, geometries, materials, textures };
+    this.result = {
+      particleSystem,
+      coreMaterials,
+      animatedMaterials,
+      orbitingBodies,
+      geometries,
+      materials,
+      textures,
+    };
   }
 
   pulseOnce() {
@@ -279,6 +514,18 @@ export class ProceduralNebula {
         material.uniforms.uTime!.value = time;
         material.uniforms.uPulse!.value = this.pulse;
       });
+      this.result.animatedMaterials.forEach((material) => {
+        if (material.uniforms.uTime) material.uniforms.uTime.value = time;
+      });
+      this.result.orbitingBodies.forEach((body) => {
+        body.pivot.rotation.y += delta * body.speed * (quiet ? 0.2 : 1);
+        body.mesh.rotation.y += delta * body.rotationSpeed * (quiet ? 0.2 : 1);
+      });
+      const phenomenon = generated.children.find((child) => child.name.startsWith('phenomenon-'));
+      if (phenomenon) {
+        phenomenon.rotation.z += delta * 0.018 * (quiet ? 0.16 : 1);
+        phenomenon.rotation.y += delta * 0.009 * (quiet ? 0.16 : 1);
+      }
     }
   }
 

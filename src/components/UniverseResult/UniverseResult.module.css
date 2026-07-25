@@ -2,7 +2,9 @@
   position: relative;
   min-height: 100svh;
   overflow: hidden;
-  background: linear-gradient(90deg, rgb(5 4 3 / 82%) 0 22%, rgb(5 4 3 / 34%) 46%, transparent 72%);
+  background:
+    radial-gradient(circle at 50% 42%, transparent 34%, rgb(2 3 4 / 14%) 92%),
+    linear-gradient(90deg, rgb(5 4 3 / 64%) 0 16%, rgb(5 4 3 / 19%) 38%, transparent 68%);
 }
 
 .quality {
@@ -63,10 +65,36 @@
   bottom: 1.6rem;
   left: 1.6rem;
   margin: 0;
-  color: var(--color-faint);
+  color: rgb(211 198 179 / 30%);
   font: 0.58rem/1 var(--font-mono);
   letter-spacing: 0.1em;
   pointer-events: none;
+}
+
+.toast {
+  position: absolute;
+  z-index: 8;
+  top: 1.4rem;
+  left: 50%;
+  margin: 0;
+  transform: translateX(-50%);
+  color: rgb(231 219 201 / 72%);
+  font: 0.6rem/1 var(--font-mono);
+  letter-spacing: 0.12em;
+  animation: toast-in 2.2s var(--ease-out) both;
+}
+
+@keyframes toast-in {
+  0%,
+  100% {
+    opacity: 0;
+    transform: translate(-50%, 0.5rem);
+  }
+  18%,
+  75% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
 }
 
 @media (max-width: 680px) {

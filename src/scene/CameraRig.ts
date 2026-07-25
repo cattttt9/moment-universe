@@ -2,11 +2,19 @@ import * as THREE from 'three';
 import type { AppStage, CameraPreset } from '../types/universe';
 
 const STAGE_DISTANCE: Record<AppStage, number> = {
-  intro: 15.5,
-  sentence: 13.6,
-  parameters: 11.8,
-  generating: 8.8,
-  universe: 10.2,
+  intro: 17.2,
+  sentence: 14.3,
+  parameters: 10.9,
+  generating: 6.8,
+  universe: 9.7,
+};
+
+const STAGE_FOV: Record<AppStage, number> = {
+  intro: 51,
+  sentence: 48,
+  parameters: 44,
+  generating: 39,
+  universe: 47,
 };
 
 export class CameraRig {
@@ -14,6 +22,7 @@ export class CameraRig {
   private preset: CameraPreset = 'right-offset';
   private distance = STAGE_DISTANCE.intro;
   private zoomOffset = 0;
+  private readonly lookTarget = new THREE.Vector3();
 
   constructor(
     private readonly camera: THREE.PerspectiveCamera,
@@ -68,6 +77,22 @@ export class CameraRig {
       delta,
     );
     this.camera.position.z = this.distance;
-    this.camera.lookAt(0, 0, 0);
+    const nextFov = THREE.MathUtils.damp(
+      this.camera.fov,
+      STAGE_FOV[this.stage],
+      this.stage === 'generating' ? 1.6 : 2.2,
+      delta,
+    );
+    if (Math.abs(nextFov - this.camera.fov) > 0.001) {
+      this.camera.fov = nextFov;
+      this.camera.updateProjectionMatrix();
+    }
+    const targetY = this.stage === 'intro' ? 0.5 : this.stage === 'sentence' ? 0.2 : 0;
+    this.lookTarget.set(
+      this.stage === 'universe' ? presetX * 0.14 : 0,
+      targetY,
+      this.stage === 'generating' ? -0.9 : 0,
+    );
+    this.camera.lookAt(this.lookTarget);
   }
 }

@@ -8,6 +8,20 @@ export interface UniverseParameters {
   fluctuation: number;
 }
 
+export interface GravityBodyState {
+  id: 'memory' | 'moment' | 'future';
+  x: number;
+  y: number;
+  velocity: number;
+}
+
+export interface GravityCalibrationState {
+  bodies: GravityBodyState[];
+  score: number;
+  stable: boolean;
+  dragging: GravityBodyState['id'] | null;
+}
+
 export interface UniverseConfig extends UniverseParameters {
   text: string;
   seed: string;
@@ -68,6 +82,40 @@ export interface ParticleBlueprint {
   brightness: number;
 }
 
+export type PlanetMaterial = 'rock' | 'gas' | 'ice' | 'volcanic' | 'ocean';
+
+export interface PlanetBlueprint {
+  radius: number;
+  orbitRadius: number;
+  orbitSpeed: number;
+  orbitTilt: number;
+  phase: number;
+  rotationSpeed: number;
+  color: string;
+  accent: string;
+  material: PlanetMaterial;
+  atmosphere: number;
+  ring: boolean;
+  moons: number;
+}
+
+export type CosmicPhenomenon =
+  | 'comet'
+  | 'lensing'
+  | 'rift'
+  | 'black-hole'
+  | 'supernova-remnant'
+  | 'dust-wind'
+  | 'orbital-resonance';
+
+export interface UniverseRecord {
+  mainStar: string;
+  gravityTendency: string;
+  stabilityIndex: number;
+  unobservedRegion: number;
+  phenomenon: CosmicPhenomenon | null;
+}
+
 export interface UniverseBlueprint {
   config: UniverseConfig;
   palette: UniversePalette;
@@ -77,6 +125,8 @@ export interface UniverseBlueprint {
   armCount: number;
   orbitEccentricity: number;
   pulseRate: number;
+  planets: PlanetBlueprint[];
+  record: UniverseRecord;
 }
 
 export interface StoredUniverse {

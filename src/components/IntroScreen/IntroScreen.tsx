@@ -25,12 +25,11 @@ export function IntroScreen({
           <span>宇宙</span>
         </h1>
         <p className={styles.lead}>
-          把一句没有说出口的话，
-          <br />
-          变成一片只属于你的星云。
+          宇宙不会重复此刻。
+          <small>校准你的位置，生成只属于现在的宇宙。</small>
         </p>
         <button
-          className="primary-action"
+          className={styles.coordinate}
           type="button"
           onClick={onStart}
           onPointerEnter={() => onAttractionChange(true)}
@@ -38,8 +37,11 @@ export function IntroScreen({
           onFocus={() => onAttractionChange(true)}
           onBlur={() => onAttractionChange(false)}
         >
-          <span>开始生成</span>
-          <span aria-hidden="true">↗</span>
+          <i aria-hidden="true" />
+          <span>
+            <strong>激活观测坐标</strong>
+            <small>HOLD THE PRESENT</small>
+          </span>
         </button>
       </section>
       <footer className={styles.footer}>

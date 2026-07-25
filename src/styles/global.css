@@ -1,11 +1,11 @@
 :root {
-  --color-bg: #090806;
-  --color-text: #e7dfd1;
-  --color-muted: #aaa195;
-  --color-dim: #807970;
-  --color-faint: #5e5952;
-  --color-accent: #d1a976;
-  --color-accent-muted: #9d7f5d;
+  --color-bg: #030506;
+  --color-text: #ede5d8;
+  --color-muted: #b6aa9b;
+  --color-dim: #92877b;
+  --color-faint: #70675f;
+  --color-accent: #d8ae77;
+  --color-accent-muted: #ae8961;
   --font-display: 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', 'SimSun', serif;
   --font-mono: 'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
@@ -32,7 +32,8 @@ body {
   min-height: 100svh;
   overflow-x: hidden;
   background:
-    radial-gradient(circle at 45% -20%, rgb(175 119 75 / 8%), transparent 35rem), var(--color-bg);
+    radial-gradient(circle at 45% -20%, rgb(175 119 75 / 7%), transparent 35rem), var(--color-bg);
+  overscroll-behavior: none;
 }
 
 button,

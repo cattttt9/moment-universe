@@ -19,9 +19,11 @@
 
 - 欢迎页：三层 WebGL 星空、镜头漂移与电影片尾式排版
 - 文字输入：1–80 字本地输入与字符粒子回声
-- 天体参数盘：能量、秩序、波动三个可拖动、可触摸的轨道控制器
+- 三体引力校准：记忆、此刻、尚未发生三颗 WebGL 天体可自由拖动、触摸并产生惯性
+- 引力反馈：弯曲连线、沿线粒子、核心波纹、稳定判定与长按完成
 - 生成转场：文字粒子采样、坍缩与星核出现
-- 动态星云：八种确定性原型、程序化雾化、分层视差与触摸/鼠标交互
+- 动态宇宙：八种确定性原型、程序化银河、行星、大气、星环、卫星和稀有现象
+- 观测模式：自动淡出的 HUD、三档画质、程序化环境音、截图与 seed 分享
 - 宇宙档案：Canvas 高分辨率 3:4 PNG 海报
 - 本地档案：最近 20 条结果，仅保存在浏览器中
 
@@ -82,8 +84,8 @@ ZIP 会生成到 `artifacts/`。解压后应通过任意静态文件服务器访
 
 ```text
 src/components/  页面阶段和可复用界面
-src/engine/      哈希、随机数、星云生成与 Three.js 场景
-src/scene/       共享舞台、三层空间、镜头、交互与后处理
+src/engine/      哈希、随机数、引力校准与确定性宇宙生成
+src/scene/       共享舞台、四层空间、三体场、镜头、天体与后处理
 src/hooks/       动态偏好、质量等级等 React hooks
 src/stores/      本地档案与应用状态辅助
 src/utils/       分享参数、海报与通用工具
@@ -105,7 +107,7 @@ WebGL 不可用时会显示明确降级说明；海报合成依赖 Canvas。
 
 ## 当前完成情况
 
-版本 `0.1.0` 已完成 MVP，当前分支包含未发布的沉浸式视觉引擎更新。真实进度见
+版本 `0.1.0` 已完成 MVP，当前分支包含未发布的沉浸式视觉引擎与三体校准更新。真实进度见
 [docs/PROGRESS.md](docs/PROGRESS.md)，
 已完成能力见 [docs/DONE.md](docs/DONE.md)，未完成事项见 [docs/TODO.md](docs/TODO.md)。
 
@@ -121,6 +123,9 @@ WebGL 不可用时会显示明确降级说明；海报合成依赖 Canvas。
 - [x] 返回修改后可以重新生成
 - [x] 鼠标圆周拖动、轨道点击和键盘参数调整
 - [x] 三个指定案例生成明显不同的原型、配色与构图
+- [x] 连续十个“此刻”变体在 seed、原型、行星数量、镜头和现象上产生构图级差异
+- [x] 三体拖动改变稳定指数与生成参数，松手惯性可衰减
+- [x] 手动画质切换、环境音开关和分享链接
 - [x] 页面全流程保持单一 WebGL Canvas
 
 ## 后续计划
@@ -132,11 +137,16 @@ WebGL 不可用时会显示明确降级说明；海报合成依赖 Canvas。
 ## 已知问题
 
 - 尚未在真实 iPhone Safari 与 Android Chrome 硬件上验证触摸手势和 PNG 文件落盘。
-- 自动质量等级暂不支持用户手动覆盖；运行时低帧率会自动降低像素比并关闭 Bloom。
+- 自动质量等级支持用户手动覆盖；运行时低帧率仍会降低像素比并关闭 Bloom。
 - 仅提供 3:4 海报；分享链接解析保留在内部，界面只鼓励图片分享。
 
 完整记录见 [docs/TODO.md](docs/TODO.md) 与
 [docs/TECHNICAL_SUMMARY.md](docs/TECHNICAL_SUMMARY.md)。
+
+本轮沉浸式升级的诊断、实现和验收记录见
+[docs/UNIVERSE_REDESIGN_PLAN.md](docs/UNIVERSE_REDESIGN_PLAN.md)、
+[docs/UNIVERSE_REDESIGN_DELIVERY.md](docs/UNIVERSE_REDESIGN_DELIVERY.md) 与
+[design-qa.md](design-qa.md)。
 
 ## 开源协议
 

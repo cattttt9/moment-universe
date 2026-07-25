@@ -36,6 +36,7 @@
   z-index: 2;
   width: min(100%, 63rem);
   padding-left: clamp(0rem, 8vw, 8rem);
+  animation: instrument-wake 1.8s var(--ease-out) both;
 }
 
 .kicker {
@@ -55,6 +56,7 @@
 
 .hero h1 span {
   display: block;
+  text-shadow: 0 0 4rem rgb(215 172 117 / 8%);
 }
 
 .hero h1 span:last-child {
@@ -63,11 +65,86 @@
 }
 
 .lead {
-  margin: 0 0 2.5rem;
+  margin: 0 0 2.2rem;
   color: var(--color-muted);
-  font-size: clamp(1rem, 2vw, 1.2rem);
+  font-size: clamp(1.05rem, 2vw, 1.28rem);
   line-height: 2;
   letter-spacing: 0.1em;
+}
+
+.lead small {
+  display: block;
+  color: var(--color-faint);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+}
+
+.coordinate {
+  display: inline-flex;
+  align-items: center;
+  gap: 1rem;
+  border: 0;
+  padding: 0.55rem 0.8rem 0.55rem 0;
+  color: rgb(231 223 210 / 72%);
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+}
+
+.coordinate > i {
+  position: relative;
+  width: 2.8rem;
+  height: 2.8rem;
+  border: 1px solid rgb(221 190 151 / 28%);
+  border-radius: 50%;
+  box-shadow:
+    inset 0 0 1.2rem rgb(209 157 98 / 8%),
+    0 0 2.4rem rgb(209 157 98 / 6%);
+}
+
+.coordinate > i::before,
+.coordinate > i::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+}
+
+.coordinate > i::before {
+  inset: 0.92rem;
+  background: #d8ba92;
+  box-shadow: 0 0 1rem rgb(226 182 127 / 88%);
+  animation: coordinate-pulse 2.8s ease-in-out infinite;
+}
+
+.coordinate > i::after {
+  inset: -0.4rem;
+  border: 1px solid rgb(216 179 133 / 9%);
+  transition:
+    transform 600ms var(--ease-out),
+    opacity 600ms ease;
+}
+
+.coordinate:hover > i::after,
+.coordinate:focus-visible > i::after {
+  opacity: 0;
+  transform: scale(1.75);
+}
+
+.coordinate span {
+  display: grid;
+  gap: 0.38rem;
+}
+
+.coordinate strong {
+  font-size: 0.82rem;
+  font-weight: 400;
+  letter-spacing: 0.15em;
+}
+
+.coordinate small {
+  color: rgb(211 186 155 / 28%);
+  font: 0.5rem/1 var(--font-mono);
+  letter-spacing: 0.22em;
 }
 
 .footer {
@@ -92,6 +169,26 @@
   cursor: pointer;
 }
 
+@keyframes instrument-wake {
+  from {
+    opacity: 0;
+    transform: translateY(1.4rem);
+    filter: blur(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes coordinate-pulse {
+  50% {
+    opacity: 0.48;
+    transform: scale(0.72);
+  }
+}
+
 @media (max-width: 680px) {
   .hero {
     padding-left: 0;
@@ -108,5 +205,12 @@
 
   .footer span {
     max-width: 11rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero,
+  .coordinate > i::before {
+    animation: none;
   }
 }

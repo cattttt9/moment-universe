@@ -7,92 +7,139 @@
   display: grid;
   grid-template-rows: auto 1fr auto;
   pointer-events: none;
-  transition: opacity 0.8s var(--ease-out);
+  transition:
+    opacity 0.9s var(--ease-out),
+    filter 0.9s var(--ease-out);
+}
+
+.visible {
+  opacity: 1;
+}
+
+.hidden {
+  opacity: 0.08;
+  filter: blur(0.6px);
+}
+
+.info:focus-within {
+  opacity: 1;
+  filter: none;
 }
 
 .info header {
   display: flex;
   justify-content: space-between;
   color: var(--color-faint);
-  font: 0.6rem/1 var(--font-mono);
-  letter-spacing: 0.22em;
+  font: 0.58rem/1 var(--font-mono);
+  letter-spacing: 0.24em;
 }
 
 .info header strong {
-  color: var(--color-dim);
+  color: rgb(219 204 183 / 52%);
   font-weight: 400;
 }
 
 .info section {
-  width: min(24rem, 72vw);
+  position: relative;
+  width: min(24rem, 78vw);
   align-self: center;
+  padding-left: 1.2rem;
+}
+
+.info section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 1px;
+  background: linear-gradient(transparent, rgb(211 174 127 / 46%) 25% 70%, transparent);
 }
 
 .type {
   margin: 0 0 1.2rem;
   color: var(--color-accent-muted);
-  font: 0.68rem/1.5 var(--font-mono);
+  font: 0.64rem/1.5 var(--font-mono);
   letter-spacing: 0.18em;
 }
 
 .info blockquote {
-  margin: 0 0 2rem;
-  font-size: clamp(1.25rem, 2.4vw, 2rem);
-  line-height: 1.8;
+  margin: 0 0 1.5rem;
+  font-size: clamp(1.25rem, 2.25vw, 1.9rem);
+  line-height: 1.75;
   letter-spacing: 0.06em;
 }
 
 .info dl {
-  display: flex;
-  gap: 2rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem 1.6rem;
 }
 
 .info dl > div {
   display: grid;
-  gap: 0.3rem;
+  gap: 0.28rem;
 }
 
 .info dt {
-  color: var(--color-faint);
-  font-size: 0.68rem;
+  color: rgb(211 199 181 / 30%);
+  font: 0.54rem/1 var(--font-mono);
+  letter-spacing: 0.1em;
 }
 
 .info dd {
   margin: 0;
-  font: 1rem/1 var(--font-mono);
-  font-variant-numeric: tabular-nums;
+  color: rgb(231 223 211 / 68%);
+  font-size: 0.72rem;
+  line-height: 1.4;
+  letter-spacing: 0.06em;
+}
+
+.seed {
+  margin: 1.2rem 0 0;
+  color: rgb(208 191 167 / 23%);
+  font: 0.5rem/1 var(--font-mono);
+  letter-spacing: 0.18em;
 }
 
 .info footer {
   display: flex;
   justify-content: flex-end;
-  gap: 0.8rem;
+  gap: 0.55rem;
   pointer-events: auto;
 }
 
 .info button {
-  border: 1px solid rgb(221 193 157 / 18%);
-  border-radius: 999px;
-  padding: 0.68rem 1rem;
-  color: var(--color-dim);
-  background: rgb(7 6 5 / 30%);
-  backdrop-filter: blur(12px);
+  min-height: 2.45rem;
+  border: 0;
+  border-bottom: 1px solid rgb(221 193 157 / 16%);
+  border-radius: 0;
+  padding: 0.55rem 0.72rem;
+  color: rgb(215 205 190 / 46%);
+  background: rgb(7 6 5 / 12%);
   cursor: pointer;
-  font-size: 0.76rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  transition:
+    color 220ms ease,
+    border-color 220ms ease,
+    background-color 220ms ease;
 }
 
-.info button:hover {
-  border-color: rgb(221 193 157 / 45%);
+.info button:hover,
+.info button:focus-visible {
+  border-color: rgb(221 193 157 / 46%);
   color: var(--color-text);
+  background: rgb(183 128 76 / 5%);
 }
 
 .info .save {
   border-color: rgb(221 193 157 / 42%);
-  color: var(--color-text);
+  color: rgb(239 228 210 / 78%);
 }
 
 .quiet {
-  opacity: 0.12;
+  opacity: 0.08;
 }
 
 .quiet:hover,
@@ -100,19 +147,43 @@
   opacity: 1;
 }
 
-@media (max-width: 680px) {
+@media (max-width: 760px) {
   .info section {
     width: min(92vw, 30rem);
     align-self: end;
-    margin-bottom: 5.5rem;
+    margin-bottom: 8rem;
+  }
+
+  .info dl {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .info footer {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(4, 1fr);
   }
 
   .info button {
     min-height: 2.8rem;
+    padding-inline: 0.35rem;
+    font-size: 0.62rem;
+  }
+
+  .info .save {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 480px) {
+  .info blockquote {
+    font-size: 1.08rem;
+  }
+
+  .info dl {
+    gap: 0.7rem;
+  }
+
+  .info dd {
+    font-size: 0.62rem;
   }
 }

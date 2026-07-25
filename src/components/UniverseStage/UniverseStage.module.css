@@ -7,10 +7,19 @@
   pointer-events: none;
 }
 
+.interactive {
+  pointer-events: auto;
+}
+
 .stage canvas {
   width: 100%;
   height: 100%;
   display: block;
+  cursor: default;
+}
+
+.interactive canvas {
+  cursor: crosshair;
 }
 
 .stage::after {

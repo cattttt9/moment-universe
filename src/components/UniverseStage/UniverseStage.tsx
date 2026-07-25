@@ -2,6 +2,7 @@ import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 're
 import { UniverseStage as UniverseStageEngine } from '../../scene/UniverseStage';
 import type {
   AppStage,
+  GravityCalibrationState,
   QualityLevel,
   UniverseBlueprint,
   UniverseParameters,
@@ -24,6 +25,8 @@ interface UniverseStageProps {
   inputLength: number;
   introAttraction: boolean;
   onReveal: () => void;
+  onCalibrationChange: (parameters: UniverseParameters, state: GravityCalibrationState) => void;
+  onCalibrationComplete: () => void;
 }
 
 function isWebGLAvailable() {
@@ -41,9 +44,13 @@ export const UniverseStage = forwardRef<UniverseStageHandle, UniverseStageProps>
     const engineRef = useRef<UniverseStageEngine | null>(null);
     const latestPropsRef = useRef(props);
     const onRevealRef = useRef(props.onReveal);
+    const onCalibrationChangeRef = useRef(props.onCalibrationChange);
+    const onCalibrationCompleteRef = useRef(props.onCalibrationComplete);
     const [available] = useState(isWebGLAvailable);
     latestPropsRef.current = props;
     onRevealRef.current = props.onReveal;
+    onCalibrationChangeRef.current = props.onCalibrationChange;
+    onCalibrationCompleteRef.current = props.onCalibrationComplete;
 
     useImperativeHandle(ref, () => ({
       capture: () => engineRef.current?.capture() ?? null,
@@ -68,13 +75,15 @@ export const UniverseStage = forwardRef<UniverseStageHandle, UniverseStageProps>
         current.quality,
         current.reducedMotion,
         () => onRevealRef.current(),
+        (parameters, state) => onCalibrationChangeRef.current(parameters, state),
+        () => onCalibrationCompleteRef.current(),
       );
       engineRef.current = engine;
       return () => {
         engine.dispose();
         engineRef.current = null;
       };
-    }, [available]);
+    }, [available, props.quality, props.reducedMotion]);
 
     useEffect(() => {
       engineRef.current?.updateState({
@@ -99,7 +108,13 @@ export const UniverseStage = forwardRef<UniverseStageHandle, UniverseStageProps>
     ]);
 
     return (
-      <div ref={hostRef} className={styles.stage} aria-hidden="true">
+      <div
+        ref={hostRef}
+        className={`${styles.stage} ${
+          props.stage === 'parameters' || props.stage === 'universe' ? styles.interactive : ''
+        }`}
+        aria-hidden="true"
+      >
         {!available && <div className={styles.fallback}>WebGL 不可用，将使用静态档案模式。</div>}
       </div>
     );

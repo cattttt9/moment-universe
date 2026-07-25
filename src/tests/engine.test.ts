@@ -96,4 +96,22 @@ describe('universe generator', () => {
     expect(UNIVERSE_PALETTES).toContainEqual(first.palette);
     expect(new Set(UNIVERSE_PALETTES.map((palette) => palette.name)).size).toBe(8);
   });
+
+  it('creates composition-level differences across ten moment variations', () => {
+    const blueprints = Array.from({ length: 10 }, (_, index) => {
+      const createdAt = `2026-07-25T10:${String(index).padStart(2, '0')}:00.000Z`;
+      const config = createUniverseConfig(
+        '宇宙不会重复此刻',
+        { energy: 56, order: 64, fluctuation: 38 },
+        createdAt,
+        createdAt,
+      );
+      return generateUniverseBlueprint(config, 'low');
+    });
+    expect(new Set(blueprints.map((item) => item.config.seed)).size).toBe(10);
+    expect(new Set(blueprints.map((item) => item.profile.archetype)).size).toBeGreaterThan(3);
+    expect(new Set(blueprints.map((item) => item.planets.length)).size).toBeGreaterThan(2);
+    expect(new Set(blueprints.map((item) => item.profile.cameraPreset)).size).toBeGreaterThan(2);
+    expect(new Set(blueprints.map((item) => item.record.phenomenon)).size).toBeGreaterThan(2);
+  });
 });
